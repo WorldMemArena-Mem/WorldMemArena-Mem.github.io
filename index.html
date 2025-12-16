@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMLR: Reasoning Within the Mind</title>
+    <title>DMLR: Reasoning Within the Mind | UCSB & Stanford</title>
+    <meta name="description" content="Reasoning Within the Mind: Dynamic Multimodal Interleaving in Latent Space">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,9 +13,22 @@
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
     
     <!-- MathJax -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process'
+            }
+        };
+    </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <!-- Tailwind CSS -->
@@ -24,399 +38,320 @@
             theme: {
                 extend: {
                     colors: {
-                        slate: {
-                            50: '#f8fafc',
-                            100: '#f1f5f9',
-                            800: '#1e293b',
-                            900: '#0f172a',
-                        },
                         brand: {
-                            blue: '#3b82f6',
-                            purple: '#a855f7',
-                            green: '#10b981',
+                            blue: '#2563eb',
+                            purple: '#9333ea',
+                            dark: '#0f172a',
                         }
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         serif: ['Noto Serif', 'serif'],
-                    },
-                    boxShadow: {
-                        'soft': '0 10px 40px -10px rgba(0,0,0,0.08)',
-                        'card': '0 0 0 1px rgba(0,0,0,0.03), 0 4px 12px rgba(0,0,0,0.05)',
-                        'glow': '0 0 20px rgba(59, 130, 246, 0.15)'
                     }
                 }
             }
         }
     </script>
-    
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #fafafa;
-            color: #1e293b;
-            overflow-x: hidden;
-        }
-
-        /* Ambient Background Blobs */
-        .blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.6;
-            z-index: -1;
-        }
-        .blob-blue { background: #e0f2fe; width: 500px; height: 500px; top: -100px; left: -100px; }
-        .blob-purple { background: #f3e8ff; width: 400px; height: 400px; bottom: 20%; right: -50px; }
-        .blob-green { background: #dcfce7; width: 300px; height: 300px; top: 40%; left: 20%; opacity: 0.4; }
-
-        /* Slider Styles */
-        .slider-container {
-            position: relative;
-            width: 100%;
-            height: 400px;
-            overflow: hidden;
-            border-radius: 1rem;
-            cursor: col-resize;
-            border: 1px solid #e2e8f0;
-            background: white;
-            box-shadow: var(--shadow-soft);
-        }
-        .slider-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        .slider-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 50%;
-            height: 100%;
-            overflow: hidden;
-            border-right: 2px solid white;
-            background: white;
-            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
-        }
-        .slider-handle {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 48px;
-            height: 48px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            pointer-events: none;
-            z-index: 10;
-        }
-    </style>
 </head>
-<body class="antialiased relative">
-
-    <!-- Ambient Background -->
-    <div class="blob blob-blue"></div>
-    <div class="blob blob-purple"></div>
-    <div class="blob blob-green"></div>
+<body class="bg-white text-slate-800 antialiased">
 
     <!-- Navigation -->
-    <nav class="sticky top-0 z-50 bg-white/70 backdrop-blur-lg border-b border-slate-200/60">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="font-extrabold text-xl tracking-tight text-slate-900 flex items-center gap-2">
-                    <div class="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-md"></div>
-                    DMLR
-                </div>
-                <div class="hidden md:flex space-x-8 text-sm font-semibold text-slate-600">
-                    <a href="#abstract" class="hover:text-blue-600 transition-colors">Abstract</a>
-                    <a href="#empirical" class="hover:text-blue-600 transition-colors">Analysis</a>
-                    <a href="#method" class="hover:text-blue-600 transition-colors">Method</a>
-                    <a href="#results" class="hover:text-blue-600 transition-colors">Results</a>
+    <nav class="fixed w-full z-50 bg-white/95 border-b border-slate-100 backdrop-blur-sm">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <span class="text-xl font-bold text-slate-900 tracking-tight">DMLR</span>
+                <div class="hidden md:flex space-x-8 text-sm font-medium text-slate-600">
+                    <a href="#abstract" class="hover:text-brand-blue transition">Abstract</a>
+                    <a href="#method" class="hover:text-brand-blue transition">Method</a>
+                    <a href="#results" class="hover:text-brand-blue transition">Results</a>
+                    <a href="#visualization" class="hover:text-brand-blue transition">Visualization</a>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="pt-24 pb-20 text-center relative">
-        <div class="max-w-5xl mx-auto px-4">
-            
-            <h1 class="text-5xl sm:text-6xl font-extrabold text-slate-900 mb-8 leading-tight tracking-tight">
-                Reasoning Within the Mind: <br class="hidden sm:block" />
+    <section class="pt-32 pb-12 text-center px-4">
+        <div class="max-w-5xl mx-auto">
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 mb-6 leading-tight">
+                Reasoning Within the Mind: <br/>
+                <!-- Gradient Title -->
                 <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Dynamic Multimodal Interleaving</span> <br/>
                 in Latent Space
             </h1>
-            
+
             <!-- Authors -->
-            <div class="text-lg text-slate-700 mb-6 font-medium">
-                <span class="hover:text-blue-600 transition-colors cursor-pointer">Chengzhi Liu<sup>1</sup></span>, 
-                <span class="hover:text-blue-600 transition-colors cursor-pointer">Yuzhe Yang<sup>1</sup></span>, 
-                <span class="hover:text-blue-600 transition-colors cursor-pointer">Yue Fan<sup>3</sup></span>, 
-                <span class="hover:text-blue-600 transition-colors cursor-pointer">Qingyu Wei<sup>2</sup></span>, 
-                <span class="hover:text-blue-600 transition-colors cursor-pointer">Sheng Liu<sup>2*</sup></span>, 
-                <span class="hover:text-blue-600 transition-colors cursor-pointer">Xin Eric Wang<sup>1*</sup></span>
-            </div>
-            
-            <div class="text-sm text-slate-500 mb-12 flex justify-center gap-6 flex-wrap">
-                <span class="flex items-center gap-2"><i class="fas fa-university text-slate-400"></i><sup>1</sup>UC, Santa Barbara</span>
-                <span class="flex items-center gap-2"><i class="fas fa-university text-slate-400"></i><sup>2</sup>Stanford University</span>
-                <span class="flex items-center gap-2"><i class="fas fa-university text-slate-400"></i><sup>3</sup>UC, Santa Cruz</span>
+            <div class="text-lg text-slate-700 mb-6 font-medium space-x-1">
+                <span class="whitespace-nowrap">Chengzhi Liu<sup>1*</sup>,</span>
+                <span class="whitespace-nowrap">Yuzhe Yang<sup>1*</sup>,</span>
+                <span class="whitespace-nowrap">Yue Fan<sup>3</sup>,</span>
+                <span class="whitespace-nowrap">Qingyu Wei<sup>2</sup>,</span>
+                <span class="whitespace-nowrap">Sheng Liu<sup>2†</sup>,</span>
+                <span class="whitespace-nowrap">Xin Eric Wang<sup>1†</sup></span>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex flex-wrap justify-center gap-4 mb-20">
-                <a href="#" class="group inline-flex items-center px-8 py-3.5 bg-slate-900 text-white text-sm font-semibold rounded-full hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                    <i class="fas fa-file-pdf mr-2 group-hover:scale-110 transition-transform"></i> Paper
-                </a>
-                <a href="#" class="group inline-flex items-center px-8 py-3.5 bg-white border border-slate-200 text-slate-700 text-sm font-semibold rounded-full hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
-                    <i class="fab fa-github mr-2 text-xl"></i> Code
-                </a>
-                <a href="#visualization" class="group inline-flex items-center px-8 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-full hover:shadow-glow transition-all shadow-md transform hover:-translate-y-0.5">
-                    <i class="fas fa-play-circle mr-2 group-hover:scale-110 transition-transform"></i> Demo
-                </a>
+            <!-- Contribution Note -->
+            <div class="text-sm text-slate-500 mb-10 italic">
+                <span class="mr-4">* Equal contribution</span>
+                <span>† Equal advising</span>
             </div>
 
-<!-- Teaser Video/Image -->
-<div class="relative rounded-2xl shadow-2xl border border-white/50 bg-white/50 backdrop-blur-sm p-4 w-full max-w-7xl mx-auto">
-    <div class="rounded-xl overflow-hidden bg-slate-100 relative group w-full">
-        
-        <!-- Image -->
-        <img src="./static/images/fig1.jpg" 
-             alt="Teaser" 
-             class="w-full h-auto group-hover:scale-[1.02] transition-transform duration-700 ease-out"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-        
-        <!-- Fallback -->
-        <div class="hidden absolute inset-0 flex-col items-center justify-center text-slate-400">
-            <i class="fas fa-image text-5xl mb-3 opacity-50"></i>
-            <span class="font-mono text-sm">./static/images/fig1.jpg</span>
-        </div>
-    </div>
-</div>
-
-
-<p class="mt-6 text-sm text-slate-500 max-w-3xl mx-auto">
-    <span class="font-bold text-slate-900">Figure 1:</span> 
-    DMLR Framework
-</p>
-
-
-    <!-- Abstract -->
-    <section id="abstract" class="py-20">
-        <div class="max-w-4xl mx-auto px-4">
-            <h2 class="text-3xl font-bold text-slate-900 mb-8 text-center tracking-tight">Abstract</h2>
-            <div class="bg-white p-10 rounded-2xl shadow-soft border border-slate-100 text-lg leading-relaxed text-slate-700 text-justify font-serif">
-                <p class="mb-6">
-                    Recent advancements in Multimodal Large Language Models (MLLMs) have enhanced reasoning but often rely on unstable external tools or explicit step-by-step text generation. Inspired by human cognition, we posit that thinking unfolds not linearly but through the <span class="bg-gradient-to-r from-blue-100 to-purple-100 px-1 rounded font-semibold text-slate-900">dynamic interleaving of reasoning and perception within the mind</span>.
-                </p>
-                <p class="mb-6">
-                    We propose <strong>DMLR</strong>, a test-time dynamic multimodal latent reasoning framework. It employs confidence-guided latent policy gradient optimization to refine latent think tokens. Furthermore, a <strong>Dynamic Visual Injection Strategy (DVI)</strong> retrieves the most relevant visual features at each thought step.
-                </p>
-                <p>
-                    Experiments across seven benchmarks show that DMLR significantly improves reasoning and perception performance while maintaining high inference efficiency.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Empirical Analysis -->
-    <section id="empirical" class="py-24 bg-white relative">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold text-slate-900 mb-4">Empirical Analysis</h2>
-                <p class="text-slate-600 max-w-2xl mx-auto text-lg">
-                    Key findings from our preliminary study that motivated the design of DMLR.
-                </p>
-            </div>
-            
-            <div class="grid md:grid-cols-2 gap-12">
-                <!-- Observation 1 -->
-                <div class="group">
-                    <div class="flex items-center gap-4 mb-4">
-                        <span class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold text-lg">1</span>
-                        <h3 class="text-xl font-bold text-slate-900">Visual Information is Used Sparsely</h3>
+            <!-- Logos with Number Badges (No Circle) -->
+            <div class="flex flex-wrap justify-center items-center gap-x-12 gap-y-6 mb-12 text-slate-600">
+                <!-- UCSB (1) -->
+                <div class="flex items-center gap-4 relative group ml-4">
+                    <div class="relative">
+                        <!-- Badge 1: Simple Text -->
+                        <span class="absolute -top-1 -left-4 text-slate-400 text-xs font-bold font-mono">1</span>
+                        <img src="./logo/ucsb.png" class="h-14 w-auto" alt="UCSB Logo">
                     </div>
-                    <p class="text-slate-600 mb-6 pl-14">
-                        Visual information is used only at a few specific stages of reasoning, rather than uniformly throughout.
-                    </p>
-                    <div class="bg-slate-50 rounded-xl border border-slate-100 overflow-hidden shadow-sm h-64 flex items-center justify-center group-hover:shadow-md transition-shadow">
-                        <!-- [IMAGE_IMPORT] -->
-                        <img src="./static/images/fig2.jpg" alt="Visual Dependency" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                        <div class="hidden flex-col items-center justify-center text-slate-400">
-                            <i class="fas fa-chart-bar mb-2"></i>
-                            <span class="text-xs font-mono">./static/images/fig2.jpg</span>
-                        </div>
+                    <div class="text-left text-sm leading-tight">
+                        <span class="font-semibold block text-slate-900">University of California,</span>
+                        <span>Santa Barbara</span>
                     </div>
-                </div>
-
-                <!-- Observation 2 -->
-                <div class="group">
-                    <div class="flex items-center gap-4 mb-4">
-                        <span class="flex items-center justify-center w-10 h-10 rounded-full bg-purple-100 text-purple-600 font-bold text-lg">2</span>
-                        <h3 class="text-xl font-bold text-slate-900">Confidence Reflects Quality</h3>
-                    </div>
-                    <p class="text-slate-600 mb-6 pl-14">
-                        High confidence aligns with stronger visual grounding, justifying confidence scores as a reward signal.
-                    </p>
-                    <div class="bg-slate-50 rounded-xl border border-slate-100 overflow-hidden shadow-sm h-64 flex items-center justify-center group-hover:shadow-md transition-shadow">
-                        <!-- [IMAGE_IMPORT] -->
-                        <img src="./static/images/fig3.jpg" alt="Confidence" class="w-full h-full object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                        <div class="hidden flex-col items-center justify-center text-slate-400">
-                            <i class="fas fa-chart-line mb-2"></i>
-                            <span class="text-xs font-mono">./images/fig3.png</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Methodology -->
-    <section id="method" class="py-24">
-        <div class="max-w-5xl mx-auto px-4">
-            <h2 class="text-3xl font-bold text-slate-900 mb-20 text-center">Methodology</h2>
-            
-            <!-- Part A -->
-            <div class="mb-24">
-                <div class="text-center mb-10">
-                    <h3 class="text-2xl font-bold text-slate-900 mb-4 flex items-center justify-center gap-3">
-                        <i class="fas fa-brain text-blue-500"></i> Latent Policy Optimization
-                    </h3>
-                    <p class="text-slate-600 max-w-3xl mx-auto text-lg leading-relaxed">
-                        Instead of generating explicit text, DMLR introduces learnable <strong>Latent Think Tokens</strong> ($ \mathcal{T} $). We use a confidence-guided reward function to optimize these tokens iteratively during test-time.
-                    </p>
-                </div>
-                <!-- Full Width Image -->
-                <div class="bg-white rounded-2xl shadow-card p-2 border border-slate-100">
-                    <!-- [IMAGE_IMPORT] -->
-                    <img src="./static/images/method.jpg" alt="Latent Method" class="w-full h-auto object-contain rounded-xl" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                    <div class="hidden w-full h-80 flex-col items-center justify-center bg-slate-50 text-slate-400 rounded-xl">
-                         <span class="text-sm font-mono">./static/images/method.jpg</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Part B -->
-            <div class="mb-24">
-                <div class="text-center mb-10">
-                    <h3 class="text-2xl font-bold text-slate-900 mb-4 flex items-center justify-center gap-3">
-                        <i class="fas fa-eye text-purple-500"></i> Dynamic Visual Injection
-                    </h3>
-                    <p class="text-slate-600 max-w-3xl mx-auto text-lg leading-relaxed">
-                        Humans don't stare at an entire image constantly. DVI mimics this by selecting only the most relevant <strong>Visual Patches</strong> based on the current thought state.
-                    </p>
-                </div>
-                <!-- Full Width Image -->
-                <div class="bg-white rounded-2xl shadow-card p-2 border border-slate-100">
-                    <!-- [IMAGE_IMPORT] -->
-                    <img src="./static/images/method.jpg" alt="Visual Method" class="w-full h-auto object-contain rounded-xl" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                     <div class="hidden w-full h-80 flex-col items-center justify-center bg-slate-50 text-slate-400 rounded-xl">
-                         <span class="text-sm font-mono">./static/images/method.jpg</span>
-                    </div>
-                </div>
-            </div>
-
-    </section>
-
-    <!-- Performance Section (Image Replacement) -->
-    <section id="results" class="py-24 bg-white">
-        <div class="max-w-6xl mx-auto px-4">
-            <h2 class="text-3xl font-bold text-slate-900 mb-16 text-center">Performance</h2>
-            
-            <!-- Replaced Cards with Single Image -->
-            <div class="bg-white rounded-2xl shadow-card p-2 border border-slate-100">
-                <!-- [IMAGE_IMPORT] -->
-                <img src="./static/images/exp.jpg" alt="Performance Results" class="w-full h-auto object-contain rounded-xl" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                 <div class="hidden w-full h-80 flex-col items-center justify-center bg-slate-50 text-slate-400 rounded-xl">
-                     <span class="text-sm font-mono">./static/images/exp.jpg</span>
-                     <p class="text-xs mt-2">Place your performance summary image here</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Visualization -->
-    <section id="visualization" class="py-24">
-        <div class="max-w-5xl mx-auto px-4">
-            <h2 class="text-3xl font-bold text-slate-900 mb-10 text-center">Qualitative Analysis</h2>
-            
-            <!-- Slider -->
-            <div class="bg-white p-4 rounded-2xl shadow-card mb-20">
-                <div class="flex justify-between items-center px-6 py-4 border-b border-slate-100 mb-4">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Explicit CoT</span>
-                    <span class="text-xs font-bold text-blue-600 uppercase tracking-widest">DMLR (Ours)</span>
                 </div>
                 
-                <div class="slider-container" id="comparison-slider">
-                    <!-- [IMAGE_IMPORT] Bottom -->
-                    <img src="./static/images/visual.jpg" class="slider-image" alt="DMLR" onerror="this.src='https://via.placeholder.com/800x400/f8fafc/94a3b8?text=Missing:./images/attention_dmlr.png'">
-                    
-                    <!-- [IMAGE_IMPORT] Top -->
-                    <div class="slider-overlay" id="slider-overlay">
-                        <img src="./static/images/visual.jpg" style="width: 100vw; max-width: 984px; height: 100%; object-fit: contain;" alt="CoT" onerror="this.src='https://via.placeholder.com/800x400/e2e8f0/64748b?text=Missing:./images/attention_cot.png'">
+                <!-- Stanford (2) -->
+                <div class="flex items-center gap-4 relative group ml-4">
+                    <div class="relative">
+                        <!-- Badge 2: Simple Text -->
+                        <span class="absolute -top-1 -left-4 text-slate-400 text-xs font-bold font-mono">2</span>
+                        <img src="./logo/stanford.png" class="h-14 w-auto" alt="Stanford Logo">
                     </div>
-                    
-                    <!-- Handle -->
-                    <div class="slider-handle" id="slider-handle">
-                        <i class="fas fa-arrows-left-right text-blue-600 text-lg"></i>
+                    <div class="text-left text-sm leading-tight">
+                        <span class="font-semibold block text-slate-900">Stanford</span>
+                        <span>University</span>
+                    </div>
+                </div>
+
+                <!-- UCSC (3) -->
+                <div class="flex items-center gap-4 relative group ml-4">
+                    <div class="relative">
+                        <!-- Badge 3: Simple Text -->
+                        <span class="absolute -top-1 -left-4 text-slate-400 text-xs font-bold font-mono">3</span>
+                        <img src="./logo/ucsc.png" class="h-14 w-auto" alt="UCSC Logo">
+                    </div>
+                    <div class="text-left text-sm leading-tight">
+                        <span class="font-semibold block text-slate-900">University of California,</span>
+                        <span>Santa Cruz</span>
                     </div>
                 </div>
             </div>
 
+            <!-- Buttons -->
+            <div class="flex justify-center gap-4 mb-16">
+                <a href="https://arxiv.org/abs/2512.12623" class="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-700 transition shadow-sm hover:shadow-md">
+                    <i class="ai ai-arxiv"></i> Paper
+                </a>
+                <a href="https://github.com/mllm-dmlr/DMLR" class="flex items-center gap-2 px-6 py-2.5 bg-slate-50 text-slate-700 border border-slate-200 rounded-lg font-semibold hover:bg-slate-100 transition shadow-sm hover:shadow-md">
+                    <i class="fab fa-github"></i> Code
+                </a>
+            </div>
+
+            <!-- Teaser Image (No Border) -->
+            <div class="max-w-6xl mx-auto mb-4">
+                <img src="./static/images/intro.png" alt="DMLR Framework Teaser" class="w-full h-auto object-contain rounded-lg" onerror="this.src='https://via.placeholder.com/1200x500/f8fafc/94a3b8?text=Comparison+Diagram'">
+            </div>
+            <!-- Caption -->
+            <p class="text-sm text-slate-500 text-center italic max-w-4xl mx-auto leading-relaxed">
+                <strong>Comparison between DMLR and two reasoning paradigms.</strong> (A) Text-only reasoning: relies solely on explicit CoT, often causing visual grounding errors and redundant steps. (B) Think-with-Image reasoning: depends on external perception tools, leading to unstable tool calls and extra overhead. (C) <strong>DMLR (ours):</strong> refines latent think tokens in the latent space through confidence-guided optimization and dynamically injects visual information, achieving self-improving reasoning without additional training while maintaining high efficiency.
+            </p>
+        </div>
     </section>
 
-    <!-- Citation -->
-    <section class="py-16 bg-white border-t border-slate-200">
-        <div class="max-w-4xl mx-auto px-4">
-            <h2 class="text-xl font-bold text-slate-900 mb-6">Citation</h2>
-            <div class="relative group">
-                <pre class="bg-slate-50 text-slate-700 p-8 rounded-xl overflow-x-auto text-sm font-mono border border-slate-200 shadow-inner">
+    <!-- Abstract (Gray Background) -->
+    <section id="abstract" class="py-16 bg-slate-50">
+        <div class="max-w-4xl mx-auto px-6">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6 text-center">Abstract</h2>
+            <div class="prose prose-lg text-justify text-slate-600 mx-auto font-serif leading-relaxed">
+                <p>
+                    Recent advancements in Multimodal Large Language Models (MLLMs) have significantly enhanced cross-modal understanding. However, existing methods often rely on explicit step-by-step textual reasoning or unstable external tools. Inspired by human cognition, we posit that thinking unfolds not linearly but through the dynamic interleaving of reasoning and perception within the mind. We propose 
+                    <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">DMLR (Dynamic Multimodal Latent Reasoning)</span>, 
+                    a test-time framework that employs confidence-guided latent policy gradient optimization to refine <em>latent think tokens</em>. Furthermore, we introduce a <strong>Dynamic Visual Injection Strategy</strong>, which retrieves relevant visual features only when needed during the thought process. Experiments across seven benchmarks demonstrate that DMLR significantly improves reasoning performance and efficiency without additional training.
+                </p>
+            </div>
+        </div>
+    </section>
 
-</pre>
-                <button onclick="navigator.clipboard.writeText('@article{DMLR2026,\n  title={Reasoning Within the Mind: Dynamic Multimodal Interleaving in Latent Space},\n  author={Liu, Chengzhi and Yang, Yuzhe and Fan, Yue and Wei, Qingyu and Liu, Sheng and Wang, Xin Eric},\n  journal={arXiv preprint},\n  year={2026}\n}')" class="absolute top-6 right-6 bg-white hover:bg-slate-50 text-slate-600 px-4 py-2 rounded-md text-xs font-semibold transition border border-slate-200 shadow-sm opacity-0 group-hover:opacity-100">
-                    Copy BibTeX
+    <!-- Empirical Observations (White Background) -->
+    <section class="py-16 bg-white border-y border-slate-100">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-10">
+                <h2 class="text-2xl font-bold text-slate-900">Empirical Observations</h2>
+                <p class="text-slate-500 mt-2">Analysis of visual dependency and confidence.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white">
+                    <!-- Styled Numbering -->
+                    <h3 class="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
+                        <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm">1</span>
+                        Visual Sparsity
+                    </h3>
+                    <p class="text-slate-600 text-sm mb-4">
+                        Visual information is not uniformly needed; it contributes only at specific reasoning stages.
+                    </p>
+                    <!-- Image (No Border) -->
+                    <div class="rounded-lg overflow-hidden">
+                         <img src="./static/images/fig2.jpg" class="w-full h-auto object-contain" alt="Figure 2" onerror="this.src='https://via.placeholder.com/600x300/f8fafc/cbd5e1?text=Visual+Dependency+Chart'">
+                    </div>
+                </div>
+
+                <div class="bg-white">
+                    <!-- Styled Numbering -->
+                    <h3 class="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
+                        <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-sm">2</span>
+                        Confidence as Signal
+                    </h3>
+                    <p class="text-slate-600 text-sm mb-4">
+                        Internal confidence strongly correlates with reasoning correctness and visual grounding quality.
+                    </p>
+                    <!-- Image (No Border) -->
+                    <div class="rounded-lg overflow-hidden">
+                        <img src="./static/images/fig3.jpg" class="w-full h-auto object-contain" alt="Figure 3" onerror="this.src='https://via.placeholder.com/600x300/f8fafc/cbd5e1?text=Confidence+Gain+Chart'">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Methodology (White Background) -->
+    <section id="method" class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">Methodology</h2>
+                <p class="max-w-2xl mx-auto text-slate-500">
+                    Confidence-guided optimization of Latent Think Tokens with Dynamic Visual Injection.
+                </p>
+            </div>
+
+            <!-- Left-Right Layout -->
+            <div class="flex flex-col md:flex-row gap-12 items-center">
+                <!-- Left: Image (No Border) -->
+                <div class="md:w-1/2 rounded-lg overflow-hidden bg-slate-50">
+                    <img src="./static/images/method.jpg" alt="DMLR Architecture" class="w-full h-auto" onerror="this.src='https://via.placeholder.com/800x600/f8fafc/94a3b8?text=DMLR+Overview'">
+                </div>
+
+                <!-- Right: Text Description -->
+                <div class="md:w-1/2 space-y-8 text-left">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm">1</span>
+                            Latent Policy Optimization
+                        </h3>
+                        <p class="text-slate-600 leading-relaxed">
+                            Instead of generating explicit text, DMLR introduces learnable <strong>Latent Think Tokens</strong> ($\mathcal{T}$). At test-time, we employ a policy gradient approach to iteratively refine these tokens. The optimization is guided by a <strong>Confidence Reward</strong> ($\mathcal{R}$), which encourages the model to find reasoning paths that maximize internal consistency and prediction confidence:
+                        </p>
+                        <div class="my-4 text-slate-800 font-mono text-sm bg-slate-50 p-3 rounded-md border border-slate-100">
+                            $$ \mathcal{T}^{(t)} \leftarrow \mathcal{T}^{(t)} + \eta \nabla_{\mathcal{T}^{(t)}} \mathcal{J} $$
+                            $$ \nabla_{\mathcal{T}}\mathcal{J} \approx \mathcal{R}(\mathcal{T}+\xi) \frac{\xi}{\sigma^{2}} $$
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-sm">2</span>
+                            Dynamic Visual Injection (DVI)
+                        </h3>
+                        <p class="text-slate-600 leading-relaxed">
+                            To mimic human cognitive interleaving, we do not inject the entire image at once. Instead, DVI dynamically retrieves the most relevant visual features based on the current thought state. 
+                            At each iteration, the model selects top-$k$ visual patches. If injecting these patches improves the confidence reward, they are integrated into the reasoning process, ensuring precise and efficient visual grounding.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results (White Background) -->
+    <section id="results" class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-6">
+            <h2 class="text-2xl font-bold text-slate-900 mb-8 text-center">Performance</h2>
+            
+            <!-- Table Image (No Border) -->
+            <div class="mb-8 overflow-hidden rounded-lg">
+                <img src="./static/images/table1.jpg" alt="Table 1 Results" class="w-full h-auto" onerror="this.src='https://via.placeholder.com/1200x500/ffffff/cbd5e1?text=Benchmark+Results'">
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                 <!-- Graph Image (No Border) -->
+                 <div class="p-6">
+                    <p class="text-center font-semibold mb-4 text-slate-700 text-sm uppercase tracking-wide">Efficiency vs. Accuracy</p>
+                    <img src="./static/images/fig11.png" alt="Efficiency" class="w-full h-auto object-contain mx-auto" onerror="this.src='https://via.placeholder.com/400x300/f8fafc/94a3b8?text=Efficiency+Graph'">
+                </div>
+                <div class="p-4">
+                    <h3 class="font-bold text-slate-900 mb-4 text-lg">Key Findings</h3>
+                    <ul class="space-y-4 text-slate-600 leading-relaxed">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-brand-blue mt-1 mr-3 flex-shrink-0 text-lg"></i>
+                            <span><strong>SOTA Performance:</strong> DMLR achieves superior performance across 7 benchmarks, including a +1.5% gain on MathVista and significant improvements in visual reasoning tasks.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-brand-blue mt-1 mr-3 flex-shrink-0 text-lg"></i>
+                            <span><strong>Training-Free Efficiency:</strong> Unlike methods requiring extensive fine-tuning or explicit CoT generation (which incurs high token costs), DMLR operates purely in latent space, offering a better trade-off between accuracy and inference speed.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Qualitative Analysis (White Background) -->
+    <section id="visualization" class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-10">
+                <h2 class="text-2xl font-bold text-slate-900">Qualitative Analysis</h2>
+                <p class="text-slate-500 mt-2">Comparison of Visual Grounding: Explicit CoT vs. DMLR</p>
+            </div>
+
+            <!-- Visualization Image (No Border) -->
+            <div class="rounded-lg overflow-hidden bg-slate-50 mb-8">
+                <img src="./static/images/visual.jpg" alt="DMLR vs Explicit CoT Visualization" class="w-full h-auto" onerror="this.src='https://via.placeholder.com/1200x600/f8fafc/94a3b8?text=Visual+Comparison'">
+            </div>
+            
+            <div class="max-w-4xl mx-auto text-slate-600 space-y-4 leading-relaxed text-justify">
+                <p>
+                    Visualization of attention heatmaps during the reasoning process. 
+                    The baseline <strong>Explicit CoT</strong> method often exhibits scattered attention, shifting focus towards task-irrelevant regions, which leads to hallucinated reasoning steps. 
+                </p>
+                <p>
+                    In contrast, <strong>DMLR</strong> maintains a stable and focused attention distribution throughout the iterative optimization process. By dynamically injecting only the best visual patches, DMLR successfully converges on the key visual evidence required to solve the problem, resulting in more reliable and grounded reasoning chains. This demonstrates that latent interleaving effectively bridges the gap between high-level semantic reasoning and low-level visual perception.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- BibTeX (Gray Background) -->
+    <section class="py-12 bg-slate-50 border-t border-slate-200">
+        <div class="max-w-4xl mx-auto px-6">
+            <h2 class="text-xl font-bold text-slate-900 mb-4">BibTeX</h2>
+            <div class="relative bg-white p-4 rounded-lg border border-slate-200 font-mono text-xs overflow-x-auto text-slate-600 shadow-sm">
+<pre id="bibtex">@misc{liu2025reasoningminddynamicmultimodal,
+      title={Reasoning Within the Mind: Dynamic Multimodal Interleaving in Latent Space}, 
+      author={Chengzhi Liu and Yuzhe Yang and Yue Fan and Qingyue Wei and Sheng Liu and Xin Eric Wang},
+      year={2025},
+      eprint={2512.12623},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2512.12623}, 
+}</pre>
+                <button onclick="copyBibtex()" class="absolute top-2 right-2 text-slate-400 hover:text-brand-blue transition" title="Copy to Clipboard">
+                    <i class="fas fa-copy"></i>
                 </button>
             </div>
         </div>
     </section>
 
-    <footer class="bg-slate-50 py-12 border-t border-slate-200">
-        <div class="max-w-5xl mx-auto px-4 text-center text-slate-500 text-sm">
-            <p>&copy; 2026 DMLR Project.</p>
-        </div>
+    <footer class="bg-white py-8 text-center text-slate-400 text-sm border-t border-slate-100">
+        <p>&copy; 2025 DMLR Project. UC Santa Barbara & Stanford University.</p>
     </footer>
 
-    <!-- Scripts -->
     <script>
-        const container = document.getElementById('comparison-slider');
-        const overlay = document.getElementById('slider-overlay');
-        const handle = document.getElementById('slider-handle');
-        let isDragging = false;
-
-        function updateSlider(x) {
-            const rect = container.getBoundingClientRect();
-            let percentage = ((x - rect.left) / rect.width) * 100;
-            percentage = Math.max(0, Math.min(100, percentage));
-            overlay.style.width = percentage + '%';
-            handle.style.left = percentage + '%';
+        function copyBibtex() {
+            var content = document.getElementById("bibtex").innerText;
+            navigator.clipboard.writeText(content);
+            alert("BibTeX copied!");
         }
-
-        container.addEventListener('mousedown', () => isDragging = true);
-        window.addEventListener('mouseup', () => isDragging = false);
-        window.addEventListener('mousemove', (e) => { if (isDragging) updateSlider(e.clientX); });
-        
-        container.addEventListener('touchstart', () => isDragging = true);
-        window.addEventListener('touchend', () => isDragging = false);
-        window.addEventListener('touchmove', (e) => { if (isDragging) updateSlider(e.touches[0].clientX); });
-        
-        container.addEventListener('click', (e) => updateSlider(e.clientX));
     </script>
 </body>
 </html>
