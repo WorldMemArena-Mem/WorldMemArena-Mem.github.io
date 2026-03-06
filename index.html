@@ -1,357 +1,1074 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DMLR: Reasoning Within the Mind | UCSB & Stanford</title>
-    <meta name="description" content="Reasoning Within the Mind: Dynamic Multimodal Interleaving in Latent Space">
-    
-    <!-- Fonts -->
+    <title>DMLR: Reasoning Within the Mind</title>
+    <meta name="description" content="Reasoning Within the Mind: Dynamic Multimodal Interleaving in Latent Space (DMLR)">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Serif:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-    
-    <!-- Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
-    
-    <!-- MathJax -->
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                processEscapes: true
-            },
-            options: {
-                ignoreHtmlClass: 'tex2jax_ignore',
-                processHtmlClass: 'tex2jax_process'
-            }
-        };
-    </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            blue: '#2563eb',
-                            purple: '#9333ea',
-                            dark: '#0f172a',
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        serif: ['Noto Serif', 'serif'],
-                    }
-                }
+    <style>
+        :root {
+            --bg: #ffffff;
+            --accent: #0f5a88; /* Lighter Navy tone */
+            --accent-dim: rgba(15, 90, 136, 0.08);
+            --accent-glow: rgba(15, 90, 136, 0.25);
+            --cyan: #2f7fb0;
+            --text: #111827;
+            --text-muted: #64748b;
+            --border: rgba(15, 90, 136, 0.18);
+            --sidebar-width: 220px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .layout {
+            max-width: 1240px;
+            margin: 0 auto;
+            display: flex;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            flex-shrink: 0;
+            position: sticky;
+            top: 32px;
+            height: fit-content;
+            padding: 50px 0 0 24px;
+        }
+
+        .nav-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .sidebar nav a {
+            display: block;
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 6px 0;
+            padding-left: 12px;
+            margin-left: -2px;
+            border-left: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .sidebar nav a:hover,
+        .sidebar nav a.active {
+            color: var(--accent);
+            border-left-color: var(--accent);
+        }
+
+        .sidebar-logo {
+            margin-top: 24px;
+            padding-left: 12px;
+        }
+
+        .sidebar-logo img {
+            width: 40%;
+            height: auto;
+            display: block;
+        }
+
+        .container {
+            flex: 1;
+            min-width: 0;
+            max-width: 940px;
+            padding: 50px 24px 80px 40px;
+        }
+
+        header {
+            text-align: left;
+            margin-bottom: 56px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        header::after {
+            content: 'DMLR';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg);
+            padding: 0 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.24em;
+            color: var(--accent);
+        }
+
+        .award-badge {
+            display: table;
+            margin: 0 auto 10px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 4px 14px;
+            color: var(--text-muted);
+            font-size: 0.86rem;
+        }
+
+        .award-badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .award-badges .award-badge {
+            margin: 0;
+        }
+
+        h1 {
+            margin: 0 0 16px;
+            font-size: 2.4rem;
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+        }
+
+        h1 .title-accent {
+            background: linear-gradient(90deg, #0d3f63, #136597, #2c7fb0, #136597, #0d3f63);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: title-gradient 6s ease infinite;
+        }
+
+        @keyframes title-gradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .authors {
+            font-size: 1.04rem;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        .author-note {
+            margin-bottom: 12px;
+            color: var(--text-muted);
+            font-size: 0.86rem;
+            font-style: italic;
+        }
+
+        .affiliations {
+            text-align: left;
+            margin-bottom: 18px;
+        }
+
+        .affil-list {
+            display: flex;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 10px 28px;
+        }
+
+        .affil-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .affil-num {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .affil-logo {
+            height: 2em;
+            width: auto;
+            max-height: 36px;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+
+        .affil-name {
+            color: var(--text);
+            font-size: 0.9rem;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        .links {
+            display: flex;
+            justify-content: flex-start;
+            gap: 12px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .links .btn {
+            border-radius: 999px;
+            padding: 6px 20px;
+            font-size: 0.84rem;
+            min-height: 42px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            font-family: 'JetBrains Mono', monospace;
+            transition: box-shadow 0.3s, transform 0.2s, background 0.2s;
+            border: none;
+            cursor: pointer;
+            line-height: 1.1;
+            box-sizing: border-box;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--cyan) 100%);
+            color: #fff;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-gh,
+        .btn-arxiv {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-gh img,
+        .btn-arxiv img {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            display: block;
+        }
+
+        .btn-arxiv img {
+            filter: invert(20%) sepia(30%) saturate(1500%) hue-rotate(180deg) brightness(85%) contrast(100%);
+        }
+
+        .btn-gh svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            display: block;
+            fill: currentColor;
+        }
+
+        .observation-entry {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+        }
+
+        .observation-text {
+            flex: 1 1 320px;
+        }
+
+        .observation-figure {
+            flex: 0 0 auto;
+            max-width: 420px;
+            text-align: center;
+        }
+
+        .observation-figure img {
+            width: 100%;
+            max-width: 380px;
+            border-radius: 16px;
+        }
+
+        .method-layout {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .method-layout figure {
+            flex: 1 1 320px;
+            max-width: 480px;
+            margin: 0;
+        }
+
+        .method-layout figure img {
+            width: 100%;
+            border-radius: 16px;
+        }
+
+        .method-layout figure figcaption {
+            text-align: center;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+
+        .method-text {
+            flex: 1 1 320px;
+        }
+
+        .method-list {
+            margin: 0 0 16px 1rem;
+            padding: 0 0 0 0.8rem;
+            list-style: disc;
+        }
+
+        .method-list li {
+            margin-bottom: 8px;
+        }
+
+        .btn:hover {
+            box-shadow: 0 0 22px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline:hover {
+            background: var(--accent-dim);
+        }
+
+        .more-research {
+            position: relative;
+        }
+
+        .more-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            min-width: 220px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 6px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+            display: none;
+            z-index: 20;
+        }
+
+        .more-menu.open {
+            display: block;
+        }
+
+        .more-menu a {
+            display: block;
+            padding: 8px 10px;
+            border-radius: 8px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.84rem;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .more-menu a:hover {
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+
+        .hero-description {
+            margin: 20px auto 12px;
+            max-width: 860px;
+            color: var(--text-muted);
+            text-align: left;
+        }
+
+        .stats-grid {
+            margin-top: 22px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .stat-item {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .stat-icon {
+            font-size: 1.1rem;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-weight: 500;
+            font-size: 1.3rem;
+        }
+
+        section {
+            margin-bottom: 56px;
+        }
+
+        h2 {
+            margin: 0 0 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+            border-left: 3px solid var(--accent);
+            padding-left: 16px;
+            letter-spacing: -0.01em;
+        }
+
+        h3 {
+            margin: 28px 0 14px;
+            font-size: 1.15rem;
+            color: var(--cyan);
+            font-weight: 500;
+        }
+
+        h4 {
+            margin: 0 0 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        p {
+            margin: 0 0 14px;
+            color: var(--text);
+            text-align: justify;
+        }
+
+        ul {
+            margin: 0 0 10px 1.1rem;
+            padding: 0;
+        }
+
+        .figure-container {
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .figure-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            border-radius: 16px;
+            box-shadow: none;
+        }
+
+        .caption {
+            margin-top: 10px;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            font-style: italic;
+            text-align: center;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.95);
+            margin-bottom: 10px;
+        }
+
+        .icon-label {
+            margin-right: 6px;
+        }
+
+        .tag-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            background: var(--accent-dim);
+        }
+
+        .data-stat {
+            margin-top: 8px;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.84rem;
+        }
+
+        .scalability-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            margin: 18px 0 22px;
+            flex-wrap: wrap;
+        }
+
+        .scalability-row .left,
+        .scalability-row .right {
+            flex: 1 1 320px;
+        }
+
+        .scalability-row img {
+            width: 100%;
+            max-width: 100%;
+            display: block;
+            border-radius: 16px;
+            box-shadow: none;
+        }
+
+        .performance-figure {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .performance-figure img {
+            width: 70%;
+            max-width: 720px;
+            min-width: 260px;
+        }
+
+        .performance-figure.wide img {
+            width: 100%;
+            max-width: none;
+        }
+
+        .performance-text {
+            margin-bottom: 28px;
+        }
+
+        .viz-description {
+            margin-top: 8px;
+            color: var(--text-muted);
+            font-size: 0.86rem;
+            text-align: center;
+        }
+
+        pre {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .citation-wrap {
+            position: relative;
+        }
+
+        .btn-copy {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            border: 1px solid var(--accent);
+            background: #fff;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-copy:hover,
+        .btn-copy.copied {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding-top: 20px;
+            text-align: center;
+            font-size: 0.86rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 960px) {
+            .layout {
+                flex-direction: column;
+                padding: 0 14px;
+            }
+            .sidebar {
+                position: static;
+                width: 100%;
+                padding: 24px 0 0;
+            }
+            .container {
+                padding: 20px 0 60px;
+            }
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
-    </script>
+
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .observation-entry {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .observation-figure,
+            .observation-figure img {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            .performance-figure img {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
-<body class="bg-white text-slate-800 antialiased">
-
-    <!-- Navigation -->
-    <nav class="fixed w-full z-50 bg-white/95 border-b border-slate-100 backdrop-blur-sm">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="flex justify-between items-center h-16">
-                <span class="text-xl font-bold text-slate-900 tracking-tight">DMLR</span>
-                <div class="hidden md:flex space-x-8 text-sm font-medium text-slate-600">
-                    <a href="#abstract" class="hover:text-brand-blue transition">Abstract</a>
-                    <a href="#method" class="hover:text-brand-blue transition">Method</a>
-                    <a href="#results" class="hover:text-brand-blue transition">Results</a>
-                    <a href="#visualization" class="hover:text-brand-blue transition">Visualization</a>
-                </div>
-            </div>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="nav-title">SECTIONS</div>
+        <nav>
+            <a href="#overview" class="active">Overview</a>
+            <a href="#observations">Observations</a>
+            <a href="#method">Methodology</a>
+            <a href="#results">Performance</a>
+            <a href="#visualization">Visualization</a>
+            <a href="#scalability">Efficiency</a>
+            <a href="#citation">Reference</a>
+        </nav>
+        <div class="sidebar-logo">
+            <img src="logo/UCSB NLP.png" alt="UCSB NLP Lab logo">
         </div>
-    </nav>
+    </aside>
 
-    <!-- Hero Section -->
-    <section class="pt-32 pb-12 text-center px-4">
-        <div class="max-w-5xl mx-auto">
-            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 mb-6 leading-tight">
-                Reasoning Within the Mind: <br/>
-                <!-- Gradient Title -->
-                <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">Dynamic Multimodal Interleaving</span> <br/>
+    <main class="container">
+        <header>
+            <div class="award-badges">
+                <span class="award-badge">Findings of CVPR 2026</span>
+            </div>
+
+            <h1>
+                Reasoning Within the Mind:<br/>
+                <span class="title-accent">Dynamic Multimodal Interleaving</span>
                 in Latent Space
             </h1>
 
-            <!-- Authors -->
-            <div class="text-lg text-slate-700 mb-6 font-medium space-x-1">
-                <span class="whitespace-nowrap">Chengzhi Liu<sup>1*</sup>,</span>
-                <span class="whitespace-nowrap">Yuzhe Yang<sup>1*</sup>,</span>
-                <span class="whitespace-nowrap">Yue Fan<sup>3</sup>,</span>
-                <span class="whitespace-nowrap">Qingyu Wei<sup>2</sup>,</span>
-                <span class="whitespace-nowrap">Sheng Liu<sup>2†</sup>,</span>
-                <span class="whitespace-nowrap">Xin Eric Wang<sup>1†</sup></span>
-            </div>
-
-            <!-- Contribution Note -->
-            <div class="text-sm text-slate-500 mb-10 italic">
-                <span class="mr-4">* Equal contribution</span>
-                <span>† Equal advising</span>
-            </div>
-
-            <!-- Logos with Number Badges (No Circle) -->
-            <div class="flex flex-wrap justify-center items-center gap-x-12 gap-y-6 mb-12 text-slate-600">
-                <!-- UCSB (1) -->
-                <div class="flex items-center gap-4 relative group ml-4">
-                    <div class="relative">
-                        <!-- Badge 1: Simple Text -->
-                        <span class="absolute -top-1 -left-4 text-slate-400 text-xs font-bold font-mono">1</span>
-                        <img src="./logo/ucsb.png" class="h-14 w-auto" alt="UCSB Logo">
-                    </div>
-                    <div class="text-left text-sm leading-tight">
-                        <span class="font-semibold block text-slate-900">University of California,</span>
-                        <span>Santa Barbara</span>
-                    </div>
-                </div>
-                
-                <!-- Stanford (2) -->
-                <div class="flex items-center gap-4 relative group ml-4">
-                    <div class="relative">
-                        <!-- Badge 2: Simple Text -->
-                        <span class="absolute -top-1 -left-4 text-slate-400 text-xs font-bold font-mono">2</span>
-                        <img src="./logo/stanford.png" class="h-14 w-auto" alt="Stanford Logo">
-                    </div>
-                    <div class="text-left text-sm leading-tight">
-                        <span class="font-semibold block text-slate-900">Stanford</span>
-                        <span>University</span>
-                    </div>
-                </div>
-
-                <!-- UCSC (3) -->
-                <div class="flex items-center gap-4 relative group ml-4">
-                    <div class="relative">
-                        <!-- Badge 3: Simple Text -->
-                        <span class="absolute -top-1 -left-4 text-slate-400 text-xs font-bold font-mono">3</span>
-                        <img src="./logo/ucsc.png" class="h-14 w-auto" alt="UCSC Logo">
-                    </div>
-                    <div class="text-left text-sm leading-tight">
-                        <span class="font-semibold block text-slate-900">University of California,</span>
-                        <span>Santa Cruz</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Buttons -->
-            <div class="flex justify-center gap-4 mb-16">
-                <a href="https://arxiv.org/abs/2512.12623" class="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-700 transition shadow-sm hover:shadow-md">
-                    <i class="ai ai-arxiv"></i> Paper
-                </a>
-                <a href="https://github.com/eric-ai-lab/DMLR" class="flex items-center gap-2 px-6 py-2.5 bg-slate-50 text-slate-700 border border-slate-200 rounded-lg font-semibold hover:bg-slate-100 transition shadow-sm hover:shadow-md">
-                    <i class="fab fa-github"></i> Code
-                </a>
-            </div>
-
-            <!-- Teaser Image (No Border) -->
-            <div class="max-w-6xl mx-auto mb-4">
-                <img src="./static/images/intro.png" alt="DMLR Framework Teaser" class="w-full h-auto object-contain rounded-lg" onerror="this.src='https://via.placeholder.com/1200x500/f8fafc/94a3b8?text=Comparison+Diagram'">
-            </div>
-            <!-- Caption -->
-            <p class="text-sm text-slate-500 text-center italic max-w-4xl mx-auto leading-relaxed">
-                <strong>Comparison between DMLR and two reasoning paradigms.</strong> (A) Text-only reasoning: relies solely on explicit CoT, often causing visual grounding errors and redundant steps. (B) Think-with-Image reasoning: depends on external perception tools, leading to unstable tool calls and extra overhead. (C) <strong>DMLR (ours):</strong> refines latent think tokens in the latent space through confidence-guided optimization and dynamically injects visual information, achieving self-improving reasoning without additional training while maintaining high efficiency.
+            <p class="authors">
+                Chengzhi Liu<sup>1*</sup>, Yuzhe Yang<sup>1*</sup>, Yue Fan<sup>3</sup>, Qingyu Wei<sup>2</sup>, Sheng Liu<sup>2†</sup>, Xin Eric Wang<sup>1†</sup>
             </p>
-        </div>
-    </section>
+            <p class="author-note">* Equal contribution &nbsp;·&nbsp; † Equal advising</p>
 
-    <!-- Abstract (Gray Background) -->
-    <section id="abstract" class="py-16 bg-slate-50">
-        <div class="max-w-4xl mx-auto px-6">
-            <h2 class="text-2xl font-bold text-slate-900 mb-6 text-center">Abstract</h2>
-            <div class="prose prose-lg text-justify text-slate-600 mx-auto font-serif leading-relaxed">
-                <p>
-                    Recent advancements in Multimodal Large Language Models (MLLMs) have significantly enhanced cross-modal understanding. However, existing methods often rely on explicit step-by-step textual reasoning or unstable external tools. Inspired by human cognition, we posit that thinking unfolds not linearly but through the dynamic interleaving of reasoning and perception within the mind. We propose 
-                    <span class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">DMLR (Dynamic Multimodal Latent Reasoning)</span>, 
-                    a test-time framework that employs confidence-guided latent policy gradient optimization to refine <em>latent think tokens</em>. Furthermore, we introduce a <strong>Dynamic Visual Injection Strategy</strong>, which retrieves relevant visual features only when needed during the thought process. Experiments across seven benchmarks demonstrate that DMLR significantly improves reasoning performance and efficiency without additional training.
+            <div class="affiliations">
+                <div class="affil-list">
+                    <div class="affil-item">
+                        <span class="affil-num">1</span>
+                        <img src="./logo/ucsb.png" alt="UCSB" class="affil-logo">
+                        <span class="affil-name">University of California, Santa Barbara</span>
+                    </div>
+                    <div class="affil-item">
+                        <span class="affil-num">2</span>
+                        <img src="./logo/stanford.png" alt="Stanford" class="affil-logo">
+                        <span class="affil-name">Stanford University</span>
+                    </div>
+                    <div class="affil-item">
+                        <span class="affil-num">3</span>
+                        <img src="./logo/ucsc.png" alt="UCSC" class="affil-logo">
+                        <span class="affil-name">University of California, Santa Cruz</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="links">
+                <a href="https://arxiv.org/abs/2512.12623" class="btn btn-outline btn-arxiv" target="_blank" rel="noopener">
+                    <img src="https://arxiv.org/static/browse/0.3.4/images/arxiv-logomark-small-white.svg" alt="">
+                    arXiv
+                </a>
+                <a href="https://github.com/eric-ai-lab/DMLR" class="btn btn-outline btn-gh" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    Code
+                </a>
+                <a href="#citation" class="btn btn-outline">BibTeX</a>
+                <div class="more-research">
+                    <button type="button" class="btn btn-outline" id="moreResearchBtn">More Research</button>
+                    <div class="more-menu" id="moreResearchMenu" role="menu" aria-label="Additional Links">
+                        <a href="https://evopresent.github.io/">EvoPresent (ICLR 2026)</a>
+                    </div>
+                </div>
+            </div>
+
+            <p class="hero-description">
+                Multimodal LLMs often depend on explicit chain-of-thought text or fragile perception tools, producing redundant steps and unstable grounding.
+                DMLR instead optimizes latent think tokens with a confidence-guided objective and injects only the most helpful visual evidence during inference,
+                boosting accuracy while keeping inference lightweight and training-free.
+            </p>
+        </header>
+
+        <section id="overview">
+            <h2>Overview</h2>
+            <div class="figure-container">
+                <img src="./static/images/intro.png" alt="DMLR overview diagram" onerror="this.src='https://via.placeholder.com/1200x500/f8fafc/94a3b8?text=DMLR+Overview'">
+                <p class="caption">
+                    Comparison among text-only reasoning, tool-heavy think-with-image paradigms, and the proposed DMLR pipeline that interleaves latent thinking with targeted visual injections.
                 </p>
             </div>
-        </div>
-    </section>
 
-    <!-- Empirical Observations (White Background) -->
-    <section class="py-16 bg-white border-y border-slate-100">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-10">
-                <h2 class="text-2xl font-bold text-slate-900">Empirical Observations</h2>
-                <p class="text-slate-500 mt-2">Analysis of visual dependency and confidence.</p>
-            </div>
-            
-            <div class="grid md:grid-cols-2 gap-8">
-                <div class="bg-white">
-                    <!-- Styled Numbering -->
-                    <h3 class="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
-                        <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm">1</span>
-                        Visual Sparsity
-                    </h3>
-                    <p class="text-slate-600 text-sm mb-4">
-                        Visual information is not uniformly needed; it contributes only at specific reasoning stages.
+            <div class="grid-2">
+                <div class="card">
+                    <h4><span class="icon-label">🎯</span>Challenge</h4>
+                    <p>
+                        Existing multimodal reasoning systems either run long explicit CoT traces or repeatedly call external perception tools, both of which
+                        add latency and often cause visual hallucination because textual reasoning drifts away from actual evidence.
                     </p>
-                    <!-- Image (No Border) -->
-                    <div class="rounded-lg overflow-hidden">
-                         <img src="./static/images/fig2.jpg" class="w-full h-auto object-contain" alt="Figure 2" onerror="this.src='https://via.placeholder.com/600x300/f8fafc/cbd5e1?text=Visual+Dependency+Chart'">
-                    </div>
                 </div>
-
-                <div class="bg-white">
-                    <!-- Styled Numbering -->
-                    <h3 class="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
-                        <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-sm">2</span>
-                        Confidence as Signal
-                    </h3>
-                    <p class="text-slate-600 text-sm mb-4">
-                        Internal confidence strongly correlates with reasoning correctness and visual grounding quality.
+                <div class="card">
+                    <h4><span class="icon-label">⚡</span>DMLR Solution</h4>
+                    <p>
+                        DMLR treats "thinking" as a latent space optimization problem. A confidence reward guides the update of latent think tokens while a dynamic visual injection policy
+                        retrieves only the visual patches that help the current thought, mirroring how humans interleave perception and reasoning internally.
                     </p>
-                    <!-- Image (No Border) -->
-                    <div class="rounded-lg overflow-hidden">
-                        <img src="./static/images/fig3.jpg" class="w-full h-auto object-contain" alt="Figure 3" onerror="this.src='https://via.placeholder.com/600x300/f8fafc/cbd5e1?text=Confidence+Gain+Chart'">
-                    </div>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Methodology (White Background) -->
-    <section id="method" class="py-16 bg-white">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-12">
-                <h2 class="text-2xl font-bold text-slate-900 mb-4">Methodology</h2>
-                <p class="max-w-2xl mx-auto text-slate-500">
-                    Confidence-guided optimization of Latent Think Tokens with Dynamic Visual Injection.
-                </p>
-            </div>
+            <p>
+                The framework is entirely test-time: no model weights are finetuned. Instead, DMLR optimizes the latent tokens it feeds to an off-the-shelf MLLM and
+                lets the internal confidence signal decide when the reasoning trajectory is reliable. This enables fast deployment on top of any frontier model.
+            </p>
+            <p>
+                Across seven multimodal reasoning benchmarks, DMLR consistently outperforms explicit CoT baselines and recent think-with-image systems, all while
+                reducing redundant perception calls and keeping inference costs low.
+            </p>
+        </section>
 
-            <!-- Left-Right Layout -->
-            <div class="flex flex-col md:flex-row gap-12 items-center">
-                <!-- Left: Image (No Border) -->
-                <div class="md:w-1/2 rounded-lg overflow-hidden bg-slate-50">
-                    <img src="./static/images/method.jpg" alt="DMLR Architecture" class="w-full h-auto" onerror="this.src='https://via.placeholder.com/800x600/f8fafc/94a3b8?text=DMLR+Overview'">
+        <section id="observations">
+            <h2>Empirical Observations</h2>
+            <p>
+                Analysis of real trajectories reveals that most reasoning tokens can evolve entirely in latent space; only a few moments
+                require explicit grounding. Confidence curves mirror this behavior, providing a dependable internal signal for steering DMLR.
+            </p>
+
+            <div class="observation-entry">
+                <div class="observation-text">
+                    <h3>Visual Sparsity</h3>
+                    <p>
+                        The visualization highlights how few steps truly benefit from additional perception. By keeping most iterations in latent space,
+                        DMLR avoids redundant image reads and lets the optimizer focus on reasoning quality instead of pixel churn.
+                    </p>
+                    <p>
+                        This sparsity motivates the Dynamic Visual Injection strategy—visual evidence is fetched only when the optimizer determines
+                        it will improve the current trajectory, mirroring how people glance back at stimuli only when necessary.
+                    </p>
                 </div>
-
-                <!-- Right: Text Description -->
-                <div class="md:w-1/2 space-y-8 text-left">
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm">1</span>
-                            Latent Policy Optimization
-                        </h3>
-                        <p class="text-slate-600 leading-relaxed">
-                            Instead of generating explicit text, DMLR introduces learnable <strong>Latent Think Tokens</strong> ($\mathcal{T}$). At test-time, we employ a policy gradient approach to iteratively refine these tokens. The optimization is guided by a <strong>Confidence Reward</strong> ($\mathcal{R}$), which encourages the model to find reasoning paths that maximize internal consistency and prediction confidence:
-                        </p>
-                        <div class="my-4 text-slate-800 font-mono text-sm bg-slate-50 p-3 rounded-md border border-slate-100">
-                            $$ \mathcal{T}^{(t)} \leftarrow \mathcal{T}^{(t)} + \eta \nabla_{\mathcal{T}^{(t)}} \mathcal{J} $$
-                            $$ \nabla_{\mathcal{T}}\mathcal{J} \approx \mathcal{R}(\mathcal{T}+\xi) \frac{\xi}{\sigma^{2}} $$
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-sm">2</span>
-                            Dynamic Visual Injection (DVI)
-                        </h3>
-                        <p class="text-slate-600 leading-relaxed">
-                            To mimic human cognitive interleaving, we do not inject the entire image at once. Instead, DVI dynamically retrieves the most relevant visual features based on the current thought state. 
-                            At each iteration, the model selects top-$k$ visual patches. If injecting these patches improves the confidence reward, they are integrated into the reasoning process, ensuring precise and efficient visual grounding.
-                        </p>
-                    </div>
+                <div class="observation-figure">
+                    <img src="./static/images/fig2.jpg" alt="Visual sparsity figure" onerror="this.src='https://via.placeholder.com/600x300/f8fafc/cbd5e1?text=Visual+Dependency'">
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Results (White Background) -->
-    <section id="results" class="py-16 bg-white">
-        <div class="max-w-6xl mx-auto px-6">
-            <h2 class="text-2xl font-bold text-slate-900 mb-8 text-center">Performance</h2>
-            
-            <!-- Table Image (No Border) -->
-            <div class="mb-8 overflow-hidden rounded-lg">
-                <img src="./static/images/table1.jpg" alt="Table 1 Results" class="w-full h-auto" onerror="this.src='https://via.placeholder.com/1200x500/ffffff/cbd5e1?text=Benchmark+Results'">
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-8 items-center">
-                 <!-- Graph Image (No Border) -->
-                 <div class="p-6">
-                    <p class="text-center font-semibold mb-4 text-slate-700 text-sm uppercase tracking-wide">Efficiency vs. Accuracy</p>
-                    <img src="./static/images/fig11.png" alt="Efficiency" class="w-full h-auto object-contain mx-auto" onerror="this.src='https://via.placeholder.com/400x300/f8fafc/94a3b8?text=Efficiency+Graph'">
+            <div class="observation-entry">
+                <div class="observation-text">
+                    <h3>Confidence as a Control Signal</h3>
+                    <p>
+                        Internal confidence rises in tandem with correct reasoning steps and drops when hallucinations occur. DMLR uses this curve as a
+                        training-free reward: perturbations that raise confidence are followed, while those that hurt it are discarded.
+                    </p>
+                    <p>
+                        Because the signal comes from the model itself, the optimizer can generalize across tasks without collecting labels, delivering
+                        the observed training-free improvements on MathVista and other visual reasoning benchmarks.
+                    </p>
                 </div>
-                <div class="p-4">
-                    <h3 class="font-bold text-slate-900 mb-4 text-lg">Key Findings</h3>
-                    <ul class="space-y-4 text-slate-600 leading-relaxed">
-                        <li class="flex items-start">
-                            <i class="fas fa-check-circle text-brand-blue mt-1 mr-3 flex-shrink-0 text-lg"></i>
-                            <span><strong>SOTA Performance:</strong> DMLR achieves superior performance across 7 benchmarks, including a +1.5% gain on MathVista and significant improvements in visual reasoning tasks.</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fas fa-check-circle text-brand-blue mt-1 mr-3 flex-shrink-0 text-lg"></i>
-                            <span><strong>Training-Free Efficiency:</strong> Unlike methods requiring extensive fine-tuning or explicit CoT generation (which incurs high token costs), DMLR operates purely in latent space, offering a better trade-off between accuracy and inference speed.</span>
-                        </li>
-                    </ul>
+                <div class="observation-figure">
+                    <img src="./static/images/fig3.jpg" alt="Confidence correlation figure" onerror="this.src='https://via.placeholder.com/600x300/f8fafc/cbd5e1?text=Confidence+Gain'">
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Qualitative Analysis (White Background) -->
-    <section id="visualization" class="py-16 bg-white">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-10">
-                <h2 class="text-2xl font-bold text-slate-900">Qualitative Analysis</h2>
-                <p class="text-slate-500 mt-2">Comparison of Visual Grounding: Explicit CoT vs. DMLR</p>
+        <section id="method">
+            <h2>Methodology</h2>
+            <div class="method-layout">
+                <figure>
+                    <img src="./static/images/method.jpg" alt="DMLR Architecture" onerror="this.src='https://via.placeholder.com/1000x500/f8fafc/94a3b8?text=DMLR+Architecture'">
+                    <figcaption>Latent policy optimization interleaves with dynamic visual injection during inference.</figcaption>
+                </figure>
+                <div class="method-text">
+                    <p>
+                        DMLR rewrites reasoning into two coupled loops: a confidence-guided latent policy gradient over think tokens and a visual injection strategy
+                        that only activates when perception can improve confidence. Everything happens at test time, so the base MLLM remains frozen.
+                    </p>
+                    <p>
+                        Each iteration samples perturbations of the latent tokens, scores them using the model’s own confidence, and keeps the update that best improves this reward.
+                        When confidence plateaus, the process terminates with a concise, grounded reasoning trace.
+                    </p>
+                </div>
             </div>
 
-            <!-- Visualization Image (No Border) -->
-            <div class="rounded-lg overflow-hidden bg-slate-50 mb-8">
-                <img src="./static/images/visual.jpg" alt="DMLR vs Explicit CoT Visualization" class="w-full h-auto" onerror="this.src='https://via.placeholder.com/1200x600/f8fafc/94a3b8?text=Visual+Comparison'">
+            <h3>Latent Policy Optimization</h3>
+            <p>
+                Instead of emitting explicit text, DMLR optimizes a sequence \(\mathcal{T}\) of latent think tokens. A REINFORCE-style estimate nudges \(\mathcal{T}\) in the direction of perturbations
+                that raise internal confidence, keeping the search tight.
+            </p>
+            <ul class="method-list">
+                <li><strong>Latent think tokens.</strong> Initialized from the prompt and refined through 3–5 iterations.</li>
+                <li><strong>Confidence reward.</strong> \(\mathcal{R}\) comes from the model’s own belief, so no labels are required.</li>
+                <li><strong>Stopping.</strong> Optimization halts once confidence saturates, preventing runaway token growth.</li>
+            </ul>
+
+            <h3>Dynamic Visual Injection</h3>
+            <p>
+                Visual evidence is fetched only when the optimizer predicts it will help. Top-\(k\) patches that increase confidence are merged into the latent context,
+                allowing the system to alternate between “imagine” and “look” states without external tools.
+            </p>
+            <ul class="method-list">
+                <li><strong>Patch selection.</strong> Attention scores rank candidate regions; only helpful patches are injected.</li>
+                <li><strong>Interleaved reasoning.</strong> Newly injected features steer the next latent step, mirroring how people revisit the scene.</li>
+            </ul>
+
+            <h3>Signals & Outputs</h3>
+            <ul class="method-list">
+                <li><strong>Images.</strong> Encoded once; selective retrieval drastically cuts visual token usage.</li>
+                <li><strong>Confidence signal.</strong> Drives the optimizer without supervised targets.</li>
+                <li><strong>Outputs.</strong> Final answers and reasoning traces decoded from the converged latent tokens.</li>
+            </ul>
+
+            <h3>Mathematical Model</h3>
+            <p>
+                The optimizer updates latent think tokens \(\mathcal{T}^{(t)}\) using a gradient estimate derived from confidence rewards. Noise \(\xi\) sampled from a Gaussian proposal perturbs the tokens and
+                the resulting reward steers the update, yielding a REINFORCE-style learning signal without labeled data.
+            </p>
+            <div class="card">
+                <h4>Latent Update Rule</h4>
+                <div class="figure-container" style="margin:10px 0">
+                    \[
+                        \mathcal{T}^{(t+1)} \leftarrow \mathcal{T}^{(t)} + \eta \nabla_{\mathcal{T}^{(t)}} \mathcal{J},
+                        \qquad \nabla_{\mathcal{T}} \mathcal{J} \approx \mathcal{R}(\mathcal{T}+\xi) \frac{\xi}{\sigma^{2}}
+                    \]
+                </div>
+                <p>The reward \(\mathcal{R}\) grows with model confidence, so high-confidence perturbations shift the latent trajectory in their direction.</p>
             </div>
-            
-            <div class="max-w-4xl mx-auto text-slate-600 space-y-4 leading-relaxed text-justify">
+            <div class="card">
+                <h4>Dynamic Visual Injection</h4>
                 <p>
-                    Visualization of attention heatmaps during the reasoning process. 
-                    The baseline <strong>Explicit CoT</strong> method often exhibits scattered attention, shifting focus towards task-irrelevant regions, which leads to hallucinated reasoning steps. 
+                    Candidate patches \(v_i\) are ranked by attention against the current latent query \(q_t\). DMLR selects the top-\(k\) patches that maximize the reward delta and augments the latent tokens:
                 </p>
-                <p>
-                    In contrast, <strong>DMLR</strong> maintains a stable and focused attention distribution throughout the iterative optimization process. By dynamically injecting only the best visual patches, DMLR successfully converges on the key visual evidence required to solve the problem, resulting in more reliable and grounded reasoning chains. This demonstrates that latent interleaving effectively bridges the gap between high-level semantic reasoning and low-level visual perception.
-                </p>
+                <div class="figure-container" style="margin:10px 0">
+                    \[
+                        \Delta \mathcal{T}_t = \operatorname*{argmax}_{\{v_i\}} \; \mathcal{R}(\mathcal{T}_t \oplus v_i) - \mathcal{R}(\mathcal{T}_t)
+                    \]
+                </div>
+                <p>This keeps the inference loop stable—visual evidence is injected only when it measurably improves confidence.</p>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- BibTeX (Gray Background) -->
-    <section class="py-12 bg-slate-50 border-t border-slate-200">
-        <div class="max-w-4xl mx-auto px-6">
-            <h2 class="text-xl font-bold text-slate-900 mb-4">BibTeX</h2>
-            <div class="relative bg-white p-4 rounded-lg border border-slate-200 font-mono text-xs overflow-x-auto text-slate-600 shadow-sm">
-<pre id="bibtex">@misc{liu2025reasoningminddynamicmultimodal,
-      title={Reasoning Within the Mind: Dynamic Multimodal Interleaving in Latent Space}, 
-      author={Chengzhi Liu and Yuzhe Yang and Yue Fan and Qingyue Wei and Sheng Liu and Xin Eric Wang},
-      year={2025},
-      eprint={2512.12623},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2512.12623}, 
-}</pre>
-                <button onclick="copyBibtex()" class="absolute top-2 right-2 text-slate-400 hover:text-brand-blue transition" title="Copy to Clipboard">
-                    <i class="fas fa-copy"></i>
-                </button>
+        <section id="results">
+            <h2>Performance</h2>
+            <h3>Benchmark Overview</h3>
+            <div class="performance-figure wide">
+                <img src="./static/images/table1.jpg" alt="Benchmark results" onerror="this.src='https://via.placeholder.com/1200x500/ffffff/cbd5e1?text=Benchmark+Summary'">
+                <p class="caption">DMLR delivers consistent gains across seven multimodal reasoning benchmarks.</p>
             </div>
-        </div>
-    </section>
+            <div class="performance-text">
+                <h3>Highlights</h3>
+                <ul>
+                    <li><strong>MathVista +1.5%</strong> accuracy increase compared with the best explicit CoT baseline.</li>
+                    <li><strong>Training-free deployment</strong> while outperforming methods that rely on expensive fine-tuning.</li>
+                    <li><strong>Lower latency</strong> thanks to fewer perception calls and shorter reasoning traces.</li>
+                </ul>
+            </div>
 
-    <footer class="bg-white py-8 text-center text-slate-400 text-sm border-t border-slate-100">
-        <p>&copy; 2025 DMLR Project. UC Santa Barbara & Stanford University.</p>
-    </footer>
+            <div class="performance-text">
+                <h3>Key Insights</h3>
+                <ul>
+                    <li><strong>SOTA accuracy.</strong> Latent reasoning beats explicit text generation across seven benchmarks.</li>
+                    <li><strong>Training-free efficiency.</strong> Only think tokens are optimized, so new MLLMs require zero finetuning.</li>
+                    <li><strong>Confidence-guided control.</strong> The internal reward prevents reasoning drift and reduces hallucination.</li>
+                    <li><strong>Grounded visual evidence.</strong> Dynamic injections ensure every glimpse contributes to the final answer.</li>
+                </ul>
+            </div>
+        </section>
 
-    <script>
-        function copyBibtex() {
-            var content = document.getElementById("bibtex").innerText;
-            navigator.clipboard.writeText(content);
-            alert("BibTeX copied!");
+        <section id="visualization">
+            <h2>Qualitative Analysis</h2>
+            <div class="figure-container">
+                <img src="./static/images/visual.jpg" alt="Qualitative comparison" onerror="this.src='https://via.placeholder.com/1200x600/f8fafc/94a3b8?text=Qualitative+Visualization'">
+            </div>
+            <p>
+                Heatmaps reveal that explicit CoT baselines often drift toward irrelevant regions, which leads to hallucinated reasoning steps. Their attention remains unstable even
+                after many thought tokens are produced.
+            </p>
+            <p>
+                DMLR keeps attention compact and steadily sharpens it as latent tokens are optimized. Only the most informative patches are inserted, enabling the model to
+                converge on the evidence required to solve the task and resulting in grounded reasoning chains.
+            </p>
+        </section>
+
+        <section id="scalability">
+            <h2>Efficiency</h2>
+            <p>
+                Because DMLR never backpropagates through the base model, it can be layered on top of any frontier MLLM. The optimizer typically converges in 3–5 iterations,
+                and dynamic visual injection triggers only when the reward improves, drastically cutting perception calls compared with tool-heavy pipelines.
+            </p>
+            <div class="scalability-row">
+                <div class="left">
+                    <img src="./static/images/fig11.png" alt="Latency trade-off" onerror="this.src='https://via.placeholder.com/700x360/f8fafc/94a3b8?text=Scaling+Curve'">
+                    <p class="viz-description">Latency remains low even as accuracy improves thanks to selective look-ups.</p>
+                </div>
+                <div class="right">
+                    <div class="card">
+                        <h4>Inference Characteristics</h4>
+                        <ul>
+                            <li>3–5 latent optimization steps per query.</li>
+                            <li>Selective patch retrieval reduces visual tokens by ~60%.</li>
+                            <li>No storage overhead—only latent tokens are updated on the fly.</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h4>Deployment</h4>
+                        <p>DMLR slots into existing evaluation stacks; it only manipulates the prompt space, so weights stay frozen and compliance-friendly.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="citation">
+            <h2>Reference</h2>
+            <p>Feel free to cite DMLR if it helps your research.</p>
+            <div class="citation-wrap">
+                <button type="button" class="btn-copy" id="copy-bibtex" aria-label="Copy BibTeX">Copy</button>
+                <pre><code id="bibtex-code">@misc{liu2025reasoningminddynamicmultimodal,
+  title        = {Reasoning Within the Mind: Dynamic Multimodal Interleaving in Latent Space},
+  author       = {Chengzhi Liu and Yuzhe Yang and Yue Fan and Qingyu Wei and Sheng Liu and Xin Eric Wang},
+  year         = {2025},
+  eprint       = {2512.12623},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CV},
+  url          = {https://arxiv.org/abs/2512.12623}
+}</code></pre>
+            </div>
+        </section>
+
+        <footer>
+            &copy; 2025 DMLR Project · UC Santa Barbara & Stanford University.
+        </footer>
+    </main>
+</div>
+
+<script>
+    (function () {
+        var btn = document.getElementById('copy-bibtex');
+        var code = document.getElementById('bibtex-code');
+        if (btn && code) {
+            btn.addEventListener('click', function () {
+                var text = code.textContent;
+                navigator.clipboard.writeText(text).then(function () {
+                    btn.textContent = 'Copied!';
+                    btn.classList.add('copied');
+                    setTimeout(function () {
+                        btn.textContent = 'Copy';
+                        btn.classList.remove('copied');
+                    }, 2000);
+                });
+            });
         }
-    </script>
+    })();
+
+    (function () {
+        var nav = document.querySelector('.sidebar nav');
+        var links = nav ? nav.querySelectorAll('a[href^="#"]') : [];
+        var sections = [];
+        links.forEach(function (a) {
+            var id = a.getAttribute('href').slice(1);
+            var el = document.getElementById(id);
+            if (el) sections.push({ el: el, link: a });
+        });
+
+        function updateActive() {
+            var scrollY = window.scrollY || window.pageYOffset;
+            var viewportMid = scrollY + window.innerHeight * 0.35;
+            var active = null;
+
+            for (var i = sections.length - 1; i >= 0; i--) {
+                var top = sections[i].el.getBoundingClientRect().top + scrollY;
+                if (top <= viewportMid) {
+                    active = sections[i].link;
+                    break;
+                }
+            }
+
+            if (!active && sections.length) active = sections[0].link;
+            links.forEach(function (a) { a.classList.remove('active'); });
+            if (active) active.classList.add('active');
+        }
+
+        window.addEventListener('scroll', function () { requestAnimationFrame(updateActive); });
+        window.addEventListener('load', updateActive);
+        updateActive();
+    })();
+
+    (function () {
+        var btn = document.getElementById('moreResearchBtn');
+        var menu = document.getElementById('moreResearchMenu');
+        if (!btn || !menu) return;
+
+        btn.addEventListener('click', function (event) {
+            event.stopPropagation();
+            menu.classList.toggle('open');
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!menu.contains(event.target) && event.target !== btn) {
+                menu.classList.remove('open');
+            }
+        });
+    })();
+</script>
+<script defer id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </body>
 </html>
