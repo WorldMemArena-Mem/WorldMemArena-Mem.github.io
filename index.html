@@ -385,7 +385,6 @@
         }
         /* Per-figure sizing: not all images should be full width */
         figure.fig-title   img { width: min(96%, 880px); }
-        figure.fig-intro   img { width: min(72%, 540px); }
         figure.fig-pipline img { width: min(96%, 880px); }
         figure.fig-bar     img { width: min(100%, 940px); }
         figure.fig-511     img { width: min(70%, 560px); }
@@ -396,7 +395,7 @@
         figure.float-right img { width: 100%; }
         @media (max-width: 720px) {
             figure.float-right { float: none; margin: 0 auto 14px; max-width: 100%; }
-            figure.fig-title img, figure.fig-intro img, figure.fig-pipline img,
+            figure.fig-title img, figure.fig-pipline img,
             figure.fig-bar img, figure.fig-511 img, figure.fig-6 img,
             figure.fig-7 img, figure.fig-8 img { width: 100%; }
         }
@@ -1346,10 +1345,6 @@
                     Hidden audit artifacts stay invisible during execution; trajectory logs and
                     backend evidence support a three-layer diagnosis.
                 </figcaption>
-            </figure>
-            <figure class="fig-intro">
-                <img src="static/images/figures/intro.png" alt="Safety risks exposed by different agent harnesses" loading="lazy"/>
-                <figcaption>Safety risks exposed by different agent execution harnesses under realistic tasks.</figcaption>
             </figure>
         </section>
 
