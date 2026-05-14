@@ -153,25 +153,70 @@
         .affil-list {
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: stretch;
             flex-wrap: wrap;
-            gap: 8px 22px;
-            margin: 6px 0 22px;
+            gap: 14px 18px;
+            margin: 14px 0 24px;
         }
         .affil-item {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
+            gap: 12px;
+            padding: 10px 16px 10px 12px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            box-shadow: var(--shadow-sm);
+            transition: transform .18s, box-shadow .18s, border-color .18s;
+        }
+        .affil-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            border-color: var(--accent-2);
+        }
+        .affil-item .affil-logo-wrap {
+            width: 52px;
+            height: 52px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-soft);
+            border-radius: 10px;
+            flex-shrink: 0;
         }
         .affil-item img {
-            height: 26px;
+            max-height: 44px;
+            max-width: 48px;
             width: auto;
-            max-width: 64px;
+            height: auto;
             object-fit: contain;
         }
-        .affil-num { color: var(--accent-2); font-weight: 600; font-size: 0.78em; }
+        .affil-item .affil-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            line-height: 1.25;
+        }
+        .affil-num {
+            color: var(--accent-2);
+            font-weight: 700;
+            font-size: 0.72rem;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.05em;
+        }
+        .affil-name {
+            color: var(--text);
+            font-size: 0.92rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        @media (max-width: 720px) {
+            .affil-list { gap: 10px; }
+            .affil-item { padding: 8px 12px 8px 10px; }
+            .affil-item .affil-logo-wrap { width: 44px; height: 44px; }
+            .affil-item img { max-height: 36px; max-width: 40px; }
+            .affil-name { font-size: 0.84rem; white-space: normal; }
+        }
 
         .links {
             display: flex;
@@ -996,11 +1041,41 @@
         <p class="authors-note">* Equal contribution &nbsp;&middot;&nbsp; Correspondence: chengzhi@ucsb.edu, ericxwang@ucsb.edu</p>
 
         <div class="affil-list">
-            <div class="affil-item"><span class="affil-num">1</span><img src="static/images/logos/UCSB_NLP.png" alt="UCSB NLP"/></div>
-            <div class="affil-item"><span class="affil-num">2</span><img src="static/images/logos/ucb.png" alt="UC Berkeley"/></div>
-            <div class="affil-item"><span class="affil-num">3</span><img src="static/images/logos/wisc.png" alt="UW–Madison"/></div>
-            <div class="affil-item"><span class="affil-num">4</span><img src="static/images/logos/stanford.png" alt="Stanford"/></div>
-            <div class="affil-item"><span class="affil-num">5</span><img src="static/images/logos/msr1.png" alt="Microsoft Research"/></div>
+            <div class="affil-item">
+                <span class="affil-logo-wrap"><img src="static/images/logos/UCSB_NLP.png" alt="UCSB NLP"/></span>
+                <span class="affil-text">
+                    <span class="affil-num">1</span>
+                    <span class="affil-name">UC Santa Barbara</span>
+                </span>
+            </div>
+            <div class="affil-item">
+                <span class="affil-logo-wrap"><img src="static/images/logos/ucb.png" alt="UC Berkeley"/></span>
+                <span class="affil-text">
+                    <span class="affil-num">2</span>
+                    <span class="affil-name">UC Berkeley</span>
+                </span>
+            </div>
+            <div class="affil-item">
+                <span class="affil-logo-wrap"><img src="static/images/logos/wisc.png" alt="UW–Madison"/></span>
+                <span class="affil-text">
+                    <span class="affil-num">3</span>
+                    <span class="affil-name">UW–Madison</span>
+                </span>
+            </div>
+            <div class="affil-item">
+                <span class="affil-logo-wrap"><img src="static/images/logos/stanford.png" alt="Stanford"/></span>
+                <span class="affil-text">
+                    <span class="affil-num">4</span>
+                    <span class="affil-name">Stanford University</span>
+                </span>
+            </div>
+            <div class="affil-item">
+                <span class="affil-logo-wrap"><img src="static/images/logos/msr1.png" alt="Microsoft Research"/></span>
+                <span class="affil-text">
+                    <span class="affil-num">5</span>
+                    <span class="affil-name">Microsoft Research</span>
+                </span>
+            </div>
         </div>
 
         <div class="links">
