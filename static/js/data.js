@@ -25,9 +25,9 @@ const DOMAINS = [
       { name: "VisualAgentBench",       value: 150, color: "#7c5cff" }
     ],
     gallery: [
-      { img: "fig11.png", title: "Action–World Loop", text: "Memory is evaluated as write, maintain, retrieve, use." },
-      { img: "pipline.png", title: "Data construction pipeline", text: "Sessions are segmented, memory points refined, QA checkpoints built." },
-      { img: "intro.png",  title: "Evaluation gap", text: "WorldMemArena moves beyond recall-only static evaluation." }
+      { img: "intro_01.png", title: "Action–World Loop", text: "Memory is evaluated as write, maintain, retrieve, use." },
+      { img: "pipline_01.png", title: "Data construction pipeline", text: "Sessions are segmented, memory points refined, QA checkpoints built." },
+      { img: "new_01.png",  title: "Scenario pressure", text: "Agentic and visual tasks expose different memory failures." }
     ]
   },
   {
@@ -51,9 +51,9 @@ const DOMAINS = [
       { name: "Startup",   value: 3, color: "#ef4444" }
     ],
     gallery: [
-      { img: "c6.png", title: "Lifelong evolution scene", text: "Personal and task states evolve across sessions." },
-      { img: "c7.png", title: "Memory annotations", text: "Narrative state, images, and gold memory points aligned." },
-      { img: "intro.png", title: "Recall vs. interaction", text: "Static recall fails to capture evolving evidence." }
+      { img: "pipline_01.png", title: "Construction pipeline", text: "Sessions segmented, memory points extracted and revised." },
+      { img: "RQ1_01.png", title: "Lifecycle failures", text: "Early omissions compound across long trajectories." },
+      { img: "intro_01.png", title: "Evaluation overview", text: "Static recall fails to capture evolving evidence." }
     ]
   },
   {
@@ -75,9 +75,9 @@ const DOMAINS = [
       { name: "Update points",    value: 3, color: "#fbbf24" }
     ],
     gallery: [
-      { img: "c7.png", title: "Lifelong memory scene", text: "Narrative arcs with personal interference." },
-      { img: "c6.png", title: "Persona state",         text: "Identity, relationships, preferences over time." },
-      { img: "RQ1.png", title: "Lifecycle collapse",    text: "Early omissions reduce later evidence availability." }
+      { img: "new_01.png", title: "Domain gap", text: "Agentic tasks and complex multimodal QA create different memory pressures." },
+      { img: "Figure_time_01.png", title: "Temporal analysis", text: "Memory performance changes over time across sessions." },
+      { img: "RQ1_01.png", title: "Lifecycle collapse", text: "Early omissions reduce later evidence availability." }
     ]
   },
   {
@@ -100,9 +100,9 @@ const DOMAINS = [
       { name: "Word docs",   value: 25, color: "#7c5cff" }
     ],
     gallery: [
-      { img: "c1.png", title: "Agent trajectory", text: "Visual interface for GUI execution traces." },
-      { img: "c2.png", title: "Memory points",    text: "Screenshots and annotations aligned with actions." },
-      { img: "c3.png", title: "Tool feedback",    text: "Environment responses drive memory updates." }
+      { img: "RQ4_01.png", title: "Retrieval behavior", text: "More retrieved memory does not always mean better evidence." },
+      { img: "new_01.png", title: "Scenario heatmap", text: "Performance varies sharply across GUI sub-domains." },
+      { img: "Figure10_acc_v2_01.png", title: "Cost–accuracy tradeoff", text: "Harness-based memory shifts the efficiency frontier." }
     ]
   },
   {
@@ -126,9 +126,9 @@ const DOMAINS = [
       { name: "Nav base",            value: 16, color: "#ef4444" }
     ],
     gallery: [
-      { img: "c3.png", title: "Embodied trace", text: "Visual states are part of the memory evidence." },
-      { img: "c4.png", title: "Execution details", text: "Actions and feedback create reusable experience." },
-      { img: "c5.png", title: "Trajectory view", text: "Long-horizon visual traces support inspection." }
+      { img: "RQ1_01.png", title: "Lifecycle failures", text: "Early omissions compound in embodied trajectories." },
+      { img: "Figure_time_01.png", title: "Temporal trends", text: "Memory performance across dialogue sessions." },
+      { img: "pipline_01.png", title: "Pipeline overview", text: "Data construction across Agentic Execution." }
     ]
   },
   {
@@ -151,9 +151,9 @@ const DOMAINS = [
       { name: "WebArena-lite", value: 39, color: "#7c5cff" }
     ],
     gallery: [
-      { img: "new.png",            title: "Scenario pressure", text: "Agentic and visual tasks create different memory failures." },
-      { img: "RQ4.png",            title: "Retrieval behavior", text: "More retrieved memory is not always better evidence." },
-      { img: "Figure10_acc_v2.png", title: "Cost–performance",  text: "Harness-based memory shifts cost and accuracy tradeoffs." }
+      { img: "new_01.png",             title: "Scenario pressure", text: "Agentic and visual tasks create different memory failures." },
+      { img: "RQ4_01.png",             title: "Retrieval behavior", text: "More retrieved memory is not always better evidence." },
+      { img: "Figure10_acc_v2_01.png",  title: "Cost–performance",  text: "Harness-based memory shifts cost and accuracy tradeoffs." }
     ]
   }
 ];
