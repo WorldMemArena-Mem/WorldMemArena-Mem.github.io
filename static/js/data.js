@@ -271,11 +271,13 @@ function renderMainChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: "rgba(10,15,36,0.95)",
-          borderColor: "rgba(255,255,255,0.14)",
+          backgroundColor: "rgba(26,29,46,0.92)",
+          borderColor: "rgba(0,0,0,0.08)",
           borderWidth: 1,
           padding: 12,
           titleFont: { weight: "700" },
+          titleColor: "#fff",
+          bodyColor: "#e4e7f0",
           callbacks: {
             label: (ctx) => ` ${ctx.parsed.y.toLocaleString()} ${METRIC_LABEL[activeMetric].toLowerCase()}`
           }
@@ -283,15 +285,15 @@ function renderMainChart() {
       },
       scales: {
         x: {
-          ticks: { color: "#c8cde6", font: { weight: 600 } },
-          grid: { color: "rgba(255,255,255,0.04)" }
+          ticks: { color: "#3d4261", font: { weight: 600, size: 11 } },
+          grid: { color: "rgba(0,0,0,0.04)" }
         },
         y: {
           ticks: {
-            color: "#8f95b8",
+            color: "#7a7f9a",
             callback: (v) => v >= 1000 ? (v / 1000).toFixed(1) + "k" : v
           },
-          grid: { color: "rgba(255,255,255,0.06)" }
+          grid: { color: "rgba(0,0,0,0.06)" }
         }
       },
       onClick: (_, items) => {
@@ -337,18 +339,20 @@ function renderRadar() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: "rgba(10,15,36,0.95)",
-          borderColor: "rgba(255,255,255,0.14)",
-          borderWidth: 1
+          backgroundColor: "rgba(26,29,46,0.92)",
+          borderColor: "rgba(0,0,0,0.08)",
+          borderWidth: 1,
+          titleColor: "#fff",
+          bodyColor: "#e4e7f0"
         }
       },
       scales: {
         r: {
           min: 0, max: 100,
-          ticks: { color: "rgba(200,205,230,0.6)", backdropColor: "transparent", stepSize: 25, font: { size: 10 } },
-          grid: { color: "rgba(255,255,255,0.08)" },
-          angleLines: { color: "rgba(255,255,255,0.08)" },
-          pointLabels: { color: "#e9ecf8", font: { weight: 700, size: 12 } }
+          ticks: { color: "rgba(122,127,154,0.8)", backdropColor: "transparent", stepSize: 25, font: { size: 10 } },
+          grid: { color: "rgba(0,0,0,0.08)" },
+          angleLines: { color: "rgba(0,0,0,0.06)" },
+          pointLabels: { color: "#1a1d2e", font: { weight: 700, size: 12 } }
         }
       }
     }
@@ -375,7 +379,7 @@ function renderDonut() {
       datasets: [{
         data,
         backgroundColor: colors,
-        borderColor: "#0a0f24",
+        borderColor: "#ffffff",
         borderWidth: 3,
         hoverOffset: 12
       }]
@@ -388,9 +392,11 @@ function renderDonut() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: "rgba(10,15,36,0.95)",
-          borderColor: "rgba(255,255,255,0.14)",
+          backgroundColor: "rgba(26,29,46,0.92)",
+          borderColor: "rgba(0,0,0,0.08)",
           borderWidth: 1,
+          titleColor: "#fff",
+          bodyColor: "#e4e7f0",
           callbacks: {
             label: (ctx) => ` ${ctx.label}: ${ctx.parsed} samples`
           }

@@ -10,7 +10,7 @@
   let w, h, dpr;
   const PARTICLES = 90;
   const particles = [];
-  const colors = ['#7c5cff', '#22d3ee', '#34d399', '#f472b6', '#fbbf24'];
+  const colors = ['#4361ee', '#3a86ff', '#0ea5a0', '#e0457b', '#d97706'];
   const mouse = { x: -1000, y: -1000 };
 
   function resize() {
@@ -71,7 +71,7 @@
         const d = Math.sqrt(dx * dx + dy * dy);
         if (d < 130) {
           ctx.strokeStyle = a.c;
-          ctx.globalAlpha = (1 - d / 130) * 0.18;
+          ctx.globalAlpha = (1 - d / 130) * 0.08;
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
