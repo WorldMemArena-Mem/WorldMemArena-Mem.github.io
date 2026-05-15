@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Explorer | WorldMemArena</title>
+  <meta name="description" content="Interactive data visualizations for WorldMemArena domains.">
+  <style>
+    :root {
+      --ink: #101828;
+      --muted: #667085;
+      --soft: #f6f8fb;
+      --line: rgba(16,24,40,0.12);
+      --blue: #2457c5;
+      --cyan: #00a6b2;
+      --green: #14a06f;
+      --violet: #7146d5;
+      --amber: #d58b16;
+      --rose: #bd3d6a;
+      --shadow: 0 18px 50px rgba(16,24,40,0.13);
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #fff;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 12px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 850;
+    }
+    .brand img { width: 34px; height: 34px; object-fit: contain; }
+    .nav-links { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .nav-links a {
+      padding: 7px 10px;
+      border-radius: 8px;
+      color: #344054;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--blue); background: rgba(36,87,197,0.08); }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 420px;
+      color: #fff;
+      background: #07111f;
+    }
+    .hero img {
+      position: absolute;
+      inset: auto 0 -18% auto;
+      width: min(950px, 92vw);
+      opacity: 0.42;
+      filter: drop-shadow(0 30px 70px rgba(0,0,0,0.55));
+      animation: drift 9s ease-in-out infinite;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(7,17,31,0.96), rgba(7,17,31,0.72) 52%, rgba(7,17,31,0.40));
+    }
+    @keyframes drift {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 86px 22px 70px;
+    }
+    .crumb {
+      color: #cfe3ff;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.78rem;
+      font-weight: 850;
+    }
+    h1 {
+      margin: 10px 0 14px;
+      max-width: 900px;
+      font-size: clamp(2.2rem, 5vw, 4.4rem);
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+    .lede {
+      max-width: 740px;
+      margin: 0;
+      color: #e4edf8;
+      font-size: clamp(1rem, 1.9vw, 1.22rem);
+    }
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 38px 22px 76px;
+    }
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .chips {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #344054;
+      font: inherit;
+      font-weight: 760;
+      cursor: pointer;
+      transition: transform .16s ease, background .16s ease, color .16s ease, border-color .16s ease;
+    }
+    .chip:hover { transform: translateY(-2px); border-color: rgba(36,87,197,0.28); }
+    .chip.active { color: #fff; background: var(--blue); border-color: var(--blue); }
+    .metric-toggle {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 3px;
+      background: #fff;
+    }
+    .metric-toggle button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 760;
+      cursor: pointer;
+    }
+    .metric-toggle button.active { background: rgba(36,87,197,0.10); color: var(--blue); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.92fr) minmax(0, 1.5fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(16,24,40,0.06);
+      overflow: hidden;
+    }
+    .panel.pad { padding: 20px; }
+    .domain-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .domain-title h2 {
+      margin: 0;
+      font-size: 1.46rem;
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+    }
+    .domain-pill {
+      color: #fff;
+      border-radius: 8px;
+      padding: 6px 9px;
+      font-size: 0.78rem;
+      font-weight: 850;
+    }
+    .domain-blurb { color: var(--muted); margin: 0 0 16px; }
+    .mini-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .mini {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: var(--soft);
+    }
+    .mini strong {
+      display: block;
+      font-size: 1.55rem;
+      line-height: 1;
+      color: var(--blue);
+      letter-spacing: -0.03em;
+    }
+    .mini span {
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+    .chart-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: var(--soft);
+    }
+    .chart-head h2 {
+      margin: 0;
+      font-size: 1.08rem;
+      letter-spacing: -0.01em;
+    }
+    .chart-head p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    #chart {
+      width: 100%;
+      min-height: 360px;
+      padding: 18px;
+    }
+    .bars { display: grid; gap: 12px; }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 150px 1fr 58px;
+      gap: 12px;
+      align-items: center;
+    }
+    .bar-label { color: #344054; font-weight: 760; font-size: 0.92rem; }
+    .bar-track {
+      height: 15px;
+      border-radius: 999px;
+      background: #eef2f7;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transform-origin: left;
+      animation: grow .65s cubic-bezier(.2,.8,.2,1) both;
+    }
+    .bar-value { color: var(--muted); font-size: 0.86rem; text-align: right; font-weight: 760; }
+    @keyframes grow {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+    .viz-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .viz-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      overflow: hidden;
+      transition: transform .16s ease, box-shadow .16s ease;
+    }
+    .viz-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    .viz-card img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      background: var(--soft);
+    }
+    .viz-card div { padding: 12px 14px; }
+    .viz-card h3 {
+      margin: 0 0 4px;
+      font-size: 0.98rem;
+    }
+    .viz-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    .matrix {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .cell {
+      min-height: 86px;
+      border-radius: 8px;
+      padding: 11px;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
+    }
+    .cell b { font-size: 1.25rem; }
+    .cell span { font-size: 0.77rem; opacity: 0.9; font-weight: 760; }
+    .caption {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 26px 22px;
+      text-align: center;
+      color: var(--muted);
+    }
+    @media (max-width: 900px) {
+      .toolbar, .grid, .viz-grid { grid-template-columns: 1fr; }
+      .matrix { grid-template-columns: repeat(2, 1fr); }
+      .bar-row { grid-template-columns: 105px 1fr 48px; }
+      .nav-inner { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="static/images/paper/UCSB_NLP.png" alt="">
+        <span>WorldMemArena</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a class="active" href="data.html">Data Explorer</a>
+        <a href="https://huggingface.co/datasets/WorldMemArena/WorldMemArena">Dataset</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <img src="static/images/paper/pipline.png" alt="">
+    <div class="hero-inner">
+      <div class="crumb">Interactive benchmark composition</div>
+      <h1>Explore memory pressure by domain.</h1>
+      <p class="lede">
+        Switch between WorldMemArena domains to compare trajectory counts, modality pressure, evidence density, and representative visual traces.
+      </p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="toolbar">
+      <div class="chips" id="domainChips" aria-label="Domain filters"></div>
+      <div class="metric-toggle" aria-label="Metric selector">
+        <button class="active" data-metric="samples">Samples</button>
+        <button data-metric="interaction">Interaction</button>
+        <button data-metric="visual">Visuals</button>
+      </div>
+    </div>
+
+    <section class="grid">
+      <aside class="panel pad" id="domainPanel"></aside>
+      <section class="panel">
+        <div class="chart-head">
+          <div>
+            <h2 id="chartTitle">Domain distribution</h2>
+            <p id="chartSubtitle">Choose a metric to redraw the distribution.</p>
+          </div>
+        </div>
+        <div id="chart"></div>
+      </section>
+    </section>
+
+    <section class="matrix" id="capabilityMatrix" aria-label="Capability matrix"></section>
+
+    <section class="viz-grid" id="visualGallery" aria-label="Representative visualizations"></section>
+  </main>
+
+  <footer>
+    Built from the WorldMemArena arXiv manuscript assets.
+  </footer>
+
+  <script src="static/js/data.js"></script>
+</body>
+</html>

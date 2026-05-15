@@ -1,1947 +1,552 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HarnessAudit: Auditing Agent Harness Safety</title>
-    <meta name="description" content="HarnessAudit: A trajectory-level framework for auditing LLM agent harness safety across boundary compliance, execution fidelity, and system stability.">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorldMemArena</title>
+  <meta name="description" content="WorldMemArena evaluates multimodal agent memory through action-world interaction.">
+  <style>
+    :root {
+      --ink: #101828;
+      --muted: #667085;
+      --paper: #ffffff;
+      --soft: #f6f8fb;
+      --line: rgba(16, 24, 40, 0.12);
+      --blue: #2457c5;
+      --cyan: #00a6b2;
+      --green: #14a06f;
+      --rose: #bd3d6a;
+      --amber: #d58b16;
+      --shadow: 0 18px 50px rgba(16, 24, 40, 0.14);
+      --radius: 8px;
+    }
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
 
-    <style>
-        :root {
-            --bg: #ffffff;
-            --bg-soft: #f8fafc;
-            --bg-panel: #ffffff;
-            --accent: #1e40af;
-            --accent-2: #2563eb;
-            --accent-3: #3b82f6;
-            --accent-soft: rgba(37, 99, 235, 0.08);
-            --accent-glow: rgba(37, 99, 235, 0.22);
-            --danger: #dc2626;
-            --warning: #d97706;
-            --success: #059669;
-            --purple: #7c3aed;
-            --teal: #0d9488;
-            --text: #0f172a;
-            --text-muted: #64748b;
-            --text-light: #94a3b8;
-            --border: rgba(15, 23, 42, 0.10);
-            --border-strong: rgba(15, 23, 42, 0.16);
-            --shadow-sm: 0 1px 2px rgba(15,23,42,.06);
-            --shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
-            --shadow-lg: 0 20px 50px -10px rgba(15, 23, 42, 0.18);
-            --sidebar-width: 224px;
-        }
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 40;
+      border-bottom: 1px solid rgba(255,255,255,0.24);
+      background: rgba(255,255,255,0.78);
+      backdrop-filter: blur(16px);
+    }
+    .nav-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 12px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+    .brand img { width: 34px; height: 34px; object-fit: contain; }
+    .nav-links {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .nav-links a {
+      padding: 7px 10px;
+      border-radius: 8px;
+      color: #344054;
+      font-size: 0.92rem;
+      font-weight: 650;
+    }
+    .nav-links a:hover { background: rgba(36, 87, 197, 0.08); color: var(--blue); }
 
-        * { box-sizing: border-box; }
-        html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+    .hero {
+      position: relative;
+      min-height: 94vh;
+      display: grid;
+      align-items: end;
+      overflow: hidden;
+      background: #07111f;
+      color: #fff;
+    }
+    .hero-media {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      opacity: 0.46;
+      transform: scale(1.03);
+    }
+    .hero-media img {
+      width: min(1180px, 94vw);
+      filter: drop-shadow(0 30px 80px rgba(0,0,0,0.55));
+      animation: floatFigure 8s ease-in-out infinite;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(7,17,31,0.94) 0%, rgba(7,17,31,0.72) 47%, rgba(7,17,31,0.42) 100%),
+        linear-gradient(180deg, rgba(7,17,31,0.35) 0%, rgba(7,17,31,0.92) 100%);
+      pointer-events: none;
+    }
+    @keyframes floatFigure {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      width: min(1180px, calc(100% - 44px));
+      margin: 0 auto;
+      padding: 130px 0 72px;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #dbeafe;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 34px;
+      height: 2px;
+      background: #67e8f9;
+    }
+    h1 {
+      margin: 14px 0 18px;
+      max-width: 920px;
+      font-size: clamp(2.5rem, 6.2vw, 5.6rem);
+      line-height: 0.98;
+      letter-spacing: -0.055em;
+    }
+    .hero-lede {
+      max-width: 780px;
+      margin: 0 0 26px;
+      color: #e5eefb;
+      font-size: clamp(1.05rem, 2vw, 1.34rem);
+    }
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 44px;
+      padding: 10px 16px;
+      border: 1px solid rgba(255,255,255,0.24);
+      border-radius: 8px;
+      color: #fff;
+      background: rgba(255,255,255,0.10);
+      font-weight: 750;
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+    }
+    .button:hover { transform: translateY(-2px); background: rgba(255,255,255,0.16); }
+    .button.primary { background: #fff; color: #11243f; border-color: #fff; }
+    .button.primary:hover { background: #e9f3ff; }
 
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.65;
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
+    main { background: #fff; }
+    .section {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 78px 22px;
+    }
+    .section.band {
+      max-width: none;
+      padding-left: 0;
+      padding-right: 0;
+      background: var(--soft);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .section.band > .inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 22px;
+    }
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, 0.85fr) minmax(260px, 0.45fr);
+      gap: 34px;
+      align-items: end;
+      margin-bottom: 30px;
+    }
+    .kicker {
+      color: var(--blue);
+      font-size: 0.78rem;
+      font-weight: 850;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+    h2 {
+      margin: 8px 0 0;
+      font-size: clamp(1.7rem, 3.2vw, 2.7rem);
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+    }
+    .section-head p, .muted { color: var(--muted); margin: 0; }
 
-        a { color: var(--accent-2); text-decoration: none; }
-        a:hover { text-decoration: underline; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: -38px;
+      position: relative;
+      z-index: 3;
+    }
+    .stat {
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 12px 30px rgba(16,24,40,0.11);
+    }
+    .stat strong {
+      display: block;
+      color: var(--blue);
+      font-size: clamp(1.7rem, 3.3vw, 2.4rem);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+    .stat span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 650;
+    }
 
-        /* ---------- Top hero w/ gradient background ---------- */
-        .hero-wrap {
-            position: relative;
-            background:
-                radial-gradient(1100px 500px at 12% -10%, rgba(124, 58, 237, 0.10), transparent 60%),
-                radial-gradient(900px 500px at 100% 0%, rgba(37, 99, 235, 0.13), transparent 55%),
-                linear-gradient(180deg, #f8fafc 0%, #ffffff 90%);
-            border-bottom: 1px solid var(--border);
-            overflow: hidden;
-        }
-        .hero-wrap::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(37,99,235,0.06) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(37,99,235,0.06) 1px, transparent 1px);
-            background-size: 44px 44px;
-            mask-image: radial-gradient(60% 60% at 50% 30%, black 0%, transparent 80%);
-            pointer-events: none;
-        }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .feature {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      background: #fff;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .feature:hover {
+      transform: translateY(-4px);
+      border-color: rgba(36,87,197,0.28);
+      box-shadow: var(--shadow);
+    }
+    .feature .num {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      font-weight: 850;
+      margin-bottom: 14px;
+    }
+    .feature h3, .finding h3 {
+      margin: 0 0 8px;
+      font-size: 1.08rem;
+      letter-spacing: -0.01em;
+    }
+    .feature p, .finding p { margin: 0; color: var(--muted); }
 
-        .hero {
-            position: relative;
-            max-width: 1180px;
-            margin: 0 auto;
-            padding: 56px 28px 44px;
-            text-align: center;
-        }
+    .figure-panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .figure-panel img {
+      width: 100%;
+      background: #fff;
+    }
+    .figure-caption {
+      padding: 13px 16px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      font-size: 0.93rem;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      gap: 24px;
+      align-items: center;
+    }
+    .findings {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    .finding {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      background: #fff;
+    }
+    .finding b {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      color: #fff;
+      background: var(--blue);
+      margin-bottom: 12px;
+    }
+    .cta {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 22px;
+      align-items: center;
+      padding: 28px;
+      border-radius: var(--radius);
+      background: #07111f;
+      color: #fff;
+      overflow: hidden;
+      position: relative;
+    }
+    .cta::after {
+      content: "";
+      position: absolute;
+      inset: -80px -100px auto auto;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(103,232,249,0.34), transparent 65%);
+      pointer-events: none;
+    }
+    .cta h2 { margin: 0 0 8px; }
+    .cta p { margin: 0; color: #c9d6e8; }
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 28px 22px;
+      color: var(--muted);
+      text-align: center;
+      background: #fff;
+    }
 
-        .tag-row {
-            display: inline-flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 18px;
-        }
-        .tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 12px;
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            font-family: 'JetBrains Mono', monospace;
-            letter-spacing: 0.04em;
-            box-shadow: var(--shadow-sm);
-        }
-        .tag .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-2); }
-        .tag.tag-danger .dot { background: var(--danger); }
-        .tag.tag-purple .dot { background: var(--purple); }
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
 
-        h1.title {
-            font-size: clamp(1.9rem, 4.2vw, 3.0rem);
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            line-height: 1.15;
-            margin: 0 0 14px;
-        }
-        h1.title .grad {
-            background: linear-gradient(90deg, #1e40af 0%, #2563eb 25%, #7c3aed 55%, #2563eb 80%, #1e40af 100%);
-            background-size: 220% 100%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: shine 7s ease-in-out infinite;
-        }
-        @keyframes shine {
-            0%, 100% { background-position: 0% 50%; }
-            50%      { background-position: 100% 50%; }
-        }
-        .title-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 22px;
-            margin: 0 auto 18px;
-            flex-wrap: wrap;
-        }
-        .title-row .title-logo {
-            width: clamp(82px, 12vw, 132px);
-            height: auto;
-            display: block;
-            filter: drop-shadow(0 6px 20px rgba(37, 99, 235, 0.22));
-            animation: logo-float 6s ease-in-out infinite;
-        }
-        .title-row h1.title { margin: 0; text-align: left; }
-        @keyframes logo-float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50%      { transform: translateY(-6px) rotate(-1.5deg); }
-        }
-        @media (max-width: 640px) {
-            .title-row { gap: 12px; }
-            .title-row h1.title { text-align: center; }
-        }
-
-        .authors {
-            font-size: 1.0rem;
-            color: var(--text);
-            margin: 0 auto 8px;
-            max-width: 900px;
-        }
-        .authors .sup { color: var(--accent-2); font-weight: 600; font-size: 0.78em; vertical-align: super; }
-        .authors .equal { color: var(--text-muted); font-size: 0.78em; vertical-align: super; }
-        .authors-note {
-            color: var(--text-muted);
-            font-size: 0.86rem;
-            font-style: italic;
-            margin-bottom: 16px;
-        }
-
-        .affil-list {
-            display: flex;
-            justify-content: center;
-            align-items: stretch;
-            flex-wrap: wrap;
-            gap: 14px 18px;
-            margin: 14px 0 24px;
-        }
-        .affil-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 16px 10px 12px;
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            box-shadow: var(--shadow-sm);
-            transition: transform .18s, box-shadow .18s, border-color .18s;
-        }
-        .affil-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-            border-color: var(--accent-2);
-        }
-        .affil-item .affil-logo-wrap {
-            width: 52px;
-            height: 52px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg-soft);
-            border-radius: 10px;
-            flex-shrink: 0;
-        }
-        .affil-item img {
-            max-height: 44px;
-            max-width: 48px;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-        }
-        .affil-item .affil-text {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            line-height: 1.25;
-        }
-        .affil-num {
-            color: var(--accent-2);
-            font-weight: 700;
-            font-size: 0.72rem;
-            font-family: 'JetBrains Mono', monospace;
-            letter-spacing: 0.05em;
-        }
-        .affil-name {
-            color: var(--text);
-            font-size: 0.92rem;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-        @media (max-width: 720px) {
-            .affil-list { gap: 10px; }
-            .affil-item { padding: 8px 12px 8px 10px; }
-            .affil-item .affil-logo-wrap { width: 44px; height: 44px; }
-            .affil-item img { max-height: 36px; max-width: 40px; }
-            .affil-name { font-size: 0.84rem; white-space: normal; }
-        }
-
-        .links {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin: 18px 0 8px;
-        }
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 9px 18px;
-            border-radius: 999px;
-            font-size: 0.88rem;
-            font-weight: 500;
-            text-decoration: none;
-            transition: transform .15s, box-shadow .2s, background .2s;
-            border: 1px solid transparent;
-            font-family: 'Inter', sans-serif;
-            cursor: pointer;
-        }
-        .btn:hover { transform: translateY(-1px); text-decoration: none; }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
-            color: #fff;
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.25);
-        }
-        .btn-primary:hover { box-shadow: 0 10px 26px rgba(124, 58, 237, 0.30); color: #fff; }
-        .btn-outline {
-            background: #fff;
-            border-color: var(--border-strong);
-            color: var(--text);
-        }
-        .btn-outline:hover { background: var(--accent-soft); border-color: var(--accent-2); color: var(--accent); }
-        .btn-hf {
-            background: linear-gradient(135deg, #FFD21E 0%, #FF9D00 100%);
-            color: #1f2937;
-            border: 1px solid transparent;
-            box-shadow: 0 6px 18px rgba(255, 157, 0, 0.28);
-        }
-        .btn-hf:hover { box-shadow: 0 10px 24px rgba(255, 157, 0, 0.38); color: #1f2937; }
-        .btn-hf .hf-emoji { font-size: 1.05rem; line-height: 1; }
-        .btn-cta {
-            background: linear-gradient(135deg, #0d9488 0%, #2563eb 100%);
-            color: #fff;
-            border: 1px solid transparent;
-            box-shadow: 0 6px 18px rgba(13, 148, 136, 0.28);
-        }
-        .btn-cta:hover { color: #fff; box-shadow: 0 10px 28px rgba(13, 148, 136, 0.40); }
-        .btn-cta .cta-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.72rem;
-            font-weight: 700;
-            padding: 1px 8px;
-            margin-left: 2px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.22);
-            color: #fff;
-            letter-spacing: 0.02em;
-        }
-        .btn svg { width: 16px; height: 16px; }
-
-        /* ---------- Layout ---------- */
-        .layout {
-            max-width: 1240px;
-            margin: 0 auto;
-            display: flex;
-            gap: 24px;
-        }
-        .sidebar {
-            width: var(--sidebar-width);
-            flex-shrink: 0;
-            position: sticky;
-            top: 24px;
-            align-self: flex-start;
-            padding: 30px 0 0 20px;
-            height: calc(100vh - 24px);
-            overflow: auto;
-        }
-        .sidebar .nav-title {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.72rem;
-            letter-spacing: 0.14em;
-            color: var(--text-light);
-            margin-bottom: 10px;
-            text-transform: uppercase;
-        }
-        .sidebar nav a {
-            display: block;
-            padding: 6px 10px;
-            color: var(--text-muted);
-            border-left: 2px solid transparent;
-            font-size: 0.86rem;
-            transition: color .15s, border-color .15s, background .15s;
-            border-radius: 0 6px 6px 0;
-        }
-        .sidebar nav a:hover,
-        .sidebar nav a.active {
-            color: var(--accent);
-            border-left-color: var(--accent);
-            background: var(--accent-soft);
-            text-decoration: none;
-        }
-
-        .container {
-            flex: 1;
-            min-width: 0;
-            padding: 30px 28px 70px 8px;
-        }
-
-        section {
-            padding: 32px 0 12px;
-            border-bottom: 1px dashed var(--border);
-        }
-        section:last-of-type { border-bottom: none; }
-
-        h2.section-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0 0 6px;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        h2.section-title .num {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.78rem;
-            color: var(--accent-2);
-            background: var(--accent-soft);
-            padding: 3px 9px;
-            border-radius: 6px;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-        }
-        .section-sub {
-            color: var(--text-muted);
-            margin: 0 0 18px;
-            font-size: 0.95rem;
-        }
-
-        p { margin: 0 0 12px; }
-        p, li { font-size: 0.97rem; }
-        strong { color: var(--text); font-weight: 600; }
-        .accent-strong { color: var(--accent); font-weight: 600; }
-
-        figure { margin: 0 0 16px; display: flex; flex-direction: column; align-items: center; }
-        figure img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 0 auto;
-            border-radius: 12px;
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(15,23,42,0.06);
-            transition: transform .25s ease, box-shadow .25s ease, filter .25s;
-            cursor: zoom-in;
-        }
-        figure img:hover {
-            transform: translateY(-2px) scale(1.005);
-            box-shadow: 0 14px 36px -8px rgba(15,23,42,0.18);
-        }
-        /* Per-figure sizing: not all images should be full width */
-        figure.fig-title   img { width: min(96%, 880px); }
-        figure.fig-pipline img { width: min(96%, 880px); }
-        figure.fig-bar     img { width: min(100%, 940px); }
-        figure.fig-511     img { width: min(70%, 560px); }
-        figure.fig-6       img { width: min(86%, 740px); }
-        figure.fig-7       img { width: min(86%, 740px); }
-        figure.fig-8       img { width: min(96%, 860px); }
-        figure.float-right { float: right; margin: 0 0 18px 22px; max-width: 50%; }
-        figure.float-right img { width: 100%; }
-        @media (max-width: 720px) {
-            figure.float-right { float: none; margin: 0 auto 14px; max-width: 100%; }
-            figure.fig-title img, figure.fig-pipline img,
-            figure.fig-bar img, figure.fig-511 img, figure.fig-6 img,
-            figure.fig-7 img, figure.fig-8 img { width: 100%; }
-        }
-        figcaption {
-            margin-top: 10px;
-            color: var(--text-muted);
-            font-size: 0.86rem;
-            text-align: center;
-            line-height: 1.5;
-            max-width: 92%;
-        }
-
-        /* Lightbox for figure zoom */
-        .lightbox {
-            position: fixed; inset: 0;
-            background: rgba(15, 23, 42, 0.86);
-            backdrop-filter: blur(6px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 30px;
-            cursor: zoom-out;
-            opacity: 0;
-            transition: opacity .2s;
-        }
-        .lightbox.open { display: flex; opacity: 1; }
-        .lightbox img {
-            max-width: 100%;
-            max-height: 100%;
-            border-radius: 8px;
-            box-shadow: 0 30px 80px rgba(0,0,0,.5);
-        }
-        .lightbox .close {
-            position: absolute;
-            top: 18px; right: 22px;
-            color: #fff;
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 999px;
-            padding: 6px 14px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .lightbox .close:hover { background: rgba(255,255,255,0.24); }
-
-        /* ---------- Highlight contributions ---------- */
-        .contrib-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 14px;
-            margin: 14px 0 22px;
-        }
-        .contrib-card {
-            padding: 18px;
-            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            transition: transform .2s, box-shadow .2s, border-color .2s;
-        }
-        .contrib-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--accent-2);
-        }
-        .contrib-icon {
-            width: 36px; height: 36px;
-            border-radius: 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: #fff;
-        }
-        .contrib-card h3 {
-            font-size: 1.0rem;
-            font-weight: 600;
-            margin: 0 0 6px;
-        }
-        .contrib-card p {
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            margin: 0;
-        }
-
-        /* ---------- Three layer cards ---------- */
-        .layer-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 14px;
-            margin: 12px 0 18px;
-        }
-        .layer-card {
-            position: relative;
-            padding: 18px;
-            border-radius: 14px;
-            background: #fff;
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
-        .layer-card::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 4px;
-        }
-        .layer-card.l1::before { background: linear-gradient(90deg, #2563eb, #7c3aed); }
-        .layer-card.l2::before { background: linear-gradient(90deg, #0d9488, #2563eb); }
-        .layer-card.l3::before { background: linear-gradient(90deg, #d97706, #dc2626); }
-        .layer-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.74rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--accent-2);
-        }
-        .layer-card.l3 .layer-label { color: var(--danger); }
-        .layer-card.l2 .layer-label { color: var(--teal); }
-        .layer-card h3 {
-            margin: 4px 0 8px;
-            font-size: 1.05rem;
-            font-weight: 700;
-        }
-        .layer-card p { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
-
-        /* ---------- KPI / stats ---------- */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin: 14px 0 22px;
-        }
-        .stat-card {
-            padding: 16px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            background: #fff;
-            text-align: center;
-            transition: transform .2s, box-shadow .2s;
-        }
-        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-        .stat-num {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            line-height: 1.1;
-        }
-        .stat-label {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* ---------- Task Browser CTA (lives on home) ---------- */
-        .cta-card {
-            display: grid;
-            grid-template-columns: 1.4fr 1fr;
-            gap: 24px;
-            align-items: center;
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            padding: 22px 24px;
-            box-shadow: var(--shadow);
-            position: relative;
-            overflow: hidden;
-        }
-        .cta-card::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background:
-              radial-gradient(400px 200px at 90% 0%, rgba(13,148,136,0.08), transparent 60%),
-              radial-gradient(420px 240px at 10% 100%, rgba(124,58,237,0.07), transparent 65%);
-            pointer-events: none;
-        }
-        .cta-left { position: relative; z-index: 1; }
-        .cta-eyebrow {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.74rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: var(--teal);
-            margin-bottom: 4px;
-        }
-        .cta-title {
-            margin: 0 0 8px;
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--text);
-        }
-        .cta-desc {
-            margin: 0 0 14px;
-            color: var(--text-muted);
-            font-size: 0.94rem;
-            line-height: 1.55;
-        }
-        .cta-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center;
-        }
-        .cta-mini { padding: 6px 12px; font-size: 0.8rem; min-height: 0; border-radius: 999px; }
-        .cta-right {
-            position: relative;
-            z-index: 1;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-        }
-        .domain-mini {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 14px;
-            background: #fff;
-            border: 1px solid var(--border);
-            border-left: 3px solid var(--dc);
-            border-radius: 10px;
-            color: var(--text);
-            font-size: 0.86rem;
-            font-weight: 500;
-            transition: transform .15s, box-shadow .15s, border-color .15s;
-            text-decoration: none;
-        }
-        .domain-mini:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-            text-decoration: none;
-            border-color: var(--dc);
-        }
-        .domain-mini span:first-child { font-size: 1rem; }
-        @media (max-width: 760px) {
-            .cta-card { grid-template-columns: 1fr; }
-            .cta-right { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        /* ---------- Task Browser styles (now lives on tasks.html only, kept here defensively) ---------- */
-        .task-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px 14px;
-            align-items: center;
-            justify-content: space-between;
-            margin: 12px 0 16px;
-        }
-        .domain-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .domain-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 0.82rem;
-            font-weight: 500;
-            background: #fff;
-            color: var(--text-muted);
-            border: 1px solid var(--border-strong);
-            cursor: pointer;
-            transition: background .15s, color .15s, border-color .15s, transform .12s;
-            font-family: 'Inter', sans-serif;
-        }
-        .domain-chip:hover { color: var(--accent); border-color: var(--accent-2); }
-        .domain-chip .chip-emoji { font-size: 0.92rem; line-height: 1; }
-        .domain-chip .chip-count {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.72rem;
-            padding: 1px 6px;
-            background: #eef2ff;
-            color: var(--accent);
-            border-radius: 6px;
-        }
-        .domain-chip.active {
-            background: linear-gradient(135deg, var(--accent), var(--purple));
-            color: #fff;
-            border-color: transparent;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
-            transform: translateY(-1px);
-        }
-        .domain-chip.active .chip-count {
-            background: rgba(255,255,255,0.22);
-            color: #fff;
-        }
-        .task-search {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #fff;
-            border: 1px solid var(--border-strong);
-            border-radius: 999px;
-            padding: 6px 14px;
-            min-width: 220px;
-        }
-        .task-search:focus-within { border-color: var(--accent-2); box-shadow: 0 0 0 4px rgba(37,99,235,0.10); }
-        .task-search input {
-            border: none;
-            outline: none;
-            background: transparent;
-            font: inherit;
-            color: var(--text);
-            flex: 1;
-            font-size: 0.86rem;
-        }
-        .task-search svg { width: 14px; height: 14px; color: var(--text-light); }
-        .task-count {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.78rem;
-            color: var(--text-muted);
-        }
-        .task-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 12px;
-        }
-        .task-card {
-            background: #fff;
-            border: 1px solid var(--border);
-            border-left: 3px solid var(--accent-2);
-            border-radius: 12px;
-            padding: 14px 14px 12px;
-            cursor: pointer;
-            transition: transform .18s, box-shadow .18s, border-color .18s;
-            display: flex;
-            flex-direction: column;
-            min-height: 116px;
-        }
-        .task-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
-            border-left-color: var(--purple);
-        }
-        .task-card .task-id {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.7rem;
-            color: var(--text-light);
-            margin-bottom: 4px;
-            letter-spacing: 0.04em;
-        }
-        .task-card .task-title {
-            font-weight: 600;
-            font-size: 0.96rem;
-            color: var(--text);
-            margin-bottom: 6px;
-            line-height: 1.35;
-        }
-        .task-card .task-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px 6px;
-            margin-bottom: 8px;
-        }
-        .task-card .meta-pill {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.66rem;
-            padding: 2px 7px;
-            border-radius: 6px;
-            background: var(--accent-soft);
-            color: var(--accent);
-            letter-spacing: 0.04em;
-        }
-        .task-card .meta-pill.role {
-            background: rgba(124,58,237,0.10);
-            color: var(--purple);
-        }
-        .task-card .task-snippet {
-            color: var(--text-muted);
-            font-size: 0.83rem;
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        .task-empty {
-            grid-column: 1 / -1;
-            padding: 28px;
-            text-align: center;
-            color: var(--text-light);
-            font-style: italic;
-            border: 1px dashed var(--border);
-            border-radius: 12px;
-        }
-
-        /* Task modal */
-        .modal {
-            position: fixed; inset: 0;
-            background: rgba(15,23,42,0.55);
-            backdrop-filter: blur(4px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 900;
-            padding: 24px;
-        }
-        .modal.open { display: flex; }
-        .modal-card {
-            background: #fff;
-            border-radius: 16px;
-            max-width: 720px;
-            width: 100%;
-            max-height: 86vh;
-            overflow: auto;
-            box-shadow: 0 40px 80px -10px rgba(15,23,42,0.4);
-            padding: 24px 26px;
-            position: relative;
-        }
-        .modal-card .close {
-            position: absolute; top: 14px; right: 14px;
-            border: none;
-            background: var(--bg-soft);
-            color: var(--text-muted);
-            width: 30px; height: 30px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1.1rem;
-        }
-        .modal-card .close:hover { background: var(--accent-soft); color: var(--accent); }
-        .modal-card .modal-id {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.74rem;
-            color: var(--text-light);
-            letter-spacing: 0.06em;
-        }
-        .modal-card h3 {
-            margin: 4px 0 10px;
-            font-size: 1.3rem;
-            color: var(--text);
-        }
-        .modal-card .meta-row {
-            display: flex; flex-wrap: wrap; gap: 6px 8px; margin-bottom: 14px;
-        }
-        .modal-card .field {
-            margin-bottom: 14px;
-        }
-        .modal-card .field h4 {
-            margin: 0 0 4px;
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--accent);
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .modal-card .field p {
-            margin: 0;
-            color: var(--text);
-            font-size: 0.94rem;
-            line-height: 1.55;
-        }
-        .modal-card .role-list,
-        .modal-card .tool-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-        .modal-card .role-list span,
-        .modal-card .tool-list code {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.78rem;
-            padding: 3px 9px;
-            background: var(--bg-soft);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: var(--text);
-        }
-        .modal-card .tool-list code { background: rgba(15,23,42,0.04); }
-
-        /* ---------- Interactive dashboard ---------- */
-        .dashboard {
-            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-            margin: 16px 0;
-        }
-        .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 14px;
-        }
-        .dashboard-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 1.0rem;
-        }
-        .dashboard-title .live-dot {
-            width: 8px; height: 8px; border-radius: 50%; background: var(--success);
-            box-shadow: 0 0 0 0 rgba(5, 150, 105, .5);
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, .5); }
-            70% { box-shadow: 0 0 0 10px rgba(5, 150, 105, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
-        }
-        .tabs {
-            display: inline-flex;
-            background: #f1f5f9;
-            padding: 4px;
-            border-radius: 10px;
-            gap: 2px;
-        }
-        .tab-btn {
-            padding: 6px 14px;
-            border: none;
-            background: transparent;
-            color: var(--text-muted);
-            border-radius: 7px;
-            font-size: 0.84rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background .15s, color .15s, box-shadow .15s;
-            font-family: 'Inter', sans-serif;
-        }
-        .tab-btn:hover { color: var(--text); }
-        .tab-btn.active {
-            background: #fff;
-            color: var(--accent);
-            box-shadow: var(--shadow-sm);
-        }
-        .chart-area {
-            position: relative;
-            min-height: 340px;
-            background: #fff;
-            border-radius: 10px;
-            padding: 12px;
-            border: 1px solid var(--border);
-        }
-        .chart-pane { display: none; }
-        .chart-pane.active { display: block; }
-        .chart-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        @media (min-width: 760px) {
-            .chart-row.two { grid-template-columns: 1fr 1fr; }
-        }
-
-        /* ---------- Leaderboard table ---------- */
-        .table-wrap {
-            overflow-x: auto;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            background: #fff;
-        }
-        table.leaderboard {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.88rem;
-        }
-        table.leaderboard th,
-        table.leaderboard td {
-            padding: 10px 12px;
-            text-align: center;
-            white-space: nowrap;
-            border-bottom: 1px solid var(--border);
-        }
-        table.leaderboard th {
-            position: sticky;
-            top: 0;
-            background: #f8fafc;
-            font-weight: 600;
-            color: var(--text);
-            font-size: 0.82rem;
-            letter-spacing: 0.02em;
-        }
-        table.leaderboard th.group {
-            background: #eef2ff;
-            border-bottom: 1px solid var(--border);
-            color: var(--accent);
-        }
-        table.leaderboard tr.group-row td {
-            text-align: left;
-            font-weight: 700;
-            background: linear-gradient(90deg, var(--accent-soft), transparent);
-            color: var(--accent);
-            font-size: 0.84rem;
-            letter-spacing: 0.04em;
-            font-family: 'JetBrains Mono', monospace;
-            padding: 8px 12px;
-        }
-        table.leaderboard tr.group-claude td { background: linear-gradient(90deg, rgba(124, 58, 237, 0.12), transparent); color: var(--purple); }
-        table.leaderboard tr.group-codex td { background: linear-gradient(90deg, rgba(217, 119, 6, 0.12), transparent); color: var(--warning); }
-        table.leaderboard td.model { text-align: left; font-weight: 500; }
-        table.leaderboard tr:hover td:not(.group-row) { background: var(--bg-soft); }
-        table.leaderboard td.best { color: var(--accent); font-weight: 700; }
-        table.leaderboard td.worst { color: var(--danger); }
-        .legend {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            margin-top: 8px;
-        }
-        .legend span { display: inline-flex; align-items: center; gap: 6px; }
-        .legend i {
-            width: 12px; height: 12px; border-radius: 4px; display: inline-block;
-        }
-
-        /* ---------- Findings ---------- */
-        .findings {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 14px;
-            margin: 14px 0;
-        }
-        .finding {
-            position: relative;
-            padding: 18px 18px 18px 60px;
-            border: 1px solid var(--border);
-            background: #fff;
-            border-radius: 14px;
-            transition: transform .2s, box-shadow .2s, border-color .2s;
-        }
-        .finding::before {
-            content: attr(data-num);
-            position: absolute;
-            left: 14px;
-            top: 14px;
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            font-size: 0.92rem;
-            color: #fff;
-            background: linear-gradient(135deg, var(--accent), var(--purple));
-        }
-        .finding:nth-child(2)::before { background: linear-gradient(135deg, var(--teal), var(--accent-2)); }
-        .finding:nth-child(3)::before { background: linear-gradient(135deg, var(--warning), var(--danger)); }
-        .finding:nth-child(4)::before { background: linear-gradient(135deg, var(--purple), var(--danger)); }
-        .finding:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--accent-2); }
-        .finding h4 {
-            font-size: 0.98rem;
-            margin: 0 0 6px;
-            font-weight: 700;
-        }
-        .finding p {
-            margin: 0;
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            line-height: 1.55;
-        }
-
-        /* ---------- Citation ---------- */
-        .citation {
-            position: relative;
-            background: #0f172a;
-            color: #e2e8f0;
-            padding: 18px 18px 18px 22px;
-            border-radius: 12px;
-            overflow: auto;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.84rem;
-            line-height: 1.6;
-        }
-        .citation .copy-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 4px 10px;
-            font-size: 0.74rem;
-            background: rgba(255,255,255,0.1);
-            color: #cbd5e1;
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .citation .copy-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
-        .citation pre { margin: 0; white-space: pre; }
-
-        /* ---------- Footer ---------- */
-        footer {
-            padding: 32px 24px;
-            text-align: center;
-            color: var(--text-light);
-            font-size: 0.84rem;
-            border-top: 1px solid var(--border);
-            margin-top: 30px;
-        }
-
-        @media (max-width: 920px) {
-            .sidebar { display: none; }
-            .container { padding: 24px 18px 50px 18px; }
-            .hero { padding: 40px 18px 28px; }
-        }
-    </style>
+    @media (max-width: 860px) {
+      .nav-inner { align-items: flex-start; flex-direction: column; }
+      .hero { min-height: auto; }
+      .hero-content { padding-top: 116px; }
+      .stats, .feature-grid, .findings, .two-col, .section-head, .cta { grid-template-columns: 1fr; }
+      .stats { margin-top: 0; }
+      .section { padding: 56px 18px; }
+      .section.band > .inner { padding: 0 18px; }
+    }
+  </style>
 </head>
 <body>
-
-<!-- ====================== HERO ====================== -->
-<div class="hero-wrap">
-    <div class="hero">
-        <div class="tag-row">
-            <span class="tag"><span class="dot"></span> Agent Safety</span>
-            <span class="tag tag-danger"><span class="dot"></span> Trajectory Auditing</span>
-            <span class="tag tag-purple"><span class="dot"></span> Multi-Agent Harnesses</span>
-        </div>
-
-        <div class="title-row">
-            <img class="title-logo" src="static/images/logos/logo.png" alt="HarnessAudit logo"/>
-            <h1 class="title">
-                <span class="grad">HarnessAudit</span><br/>
-                Auditing Agent Harness Safety
-            </h1>
-        </div>
-
-        <p class="authors">
-            Chengzhi Liu<sup class="equal">*</sup><sup class="sup">1</sup>,
-            Yichen Guo<sup class="equal">*</sup><sup class="sup">1</sup>,
-            Yepeng Liu<sup class="sup">1</sup>,
-            Yuzhe Yang<sup class="sup">1</sup>,
-            Qianqi Yan<sup class="sup">1</sup>,
-            Xuandong Zhao<sup class="sup">2</sup>,
-            Wenyue Hua<sup class="sup">5</sup>,
-            Sheng Liu<sup class="sup">4</sup>,
-            Sharon Li<sup class="sup">3</sup>,
-            Yuheng Bu<sup class="sup">1</sup>,
-            Xin Eric Wang<sup class="sup">1</sup>
-        </p>
-        <p class="authors-note">* Equal contribution &nbsp;&middot;&nbsp; Correspondence: chengzhi@ucsb.edu, ericxwang@ucsb.edu</p>
-
-        <div class="affil-list">
-            <div class="affil-item">
-                <span class="affil-logo-wrap"><img src="static/images/logos/UCSB_NLP.png" alt="UCSB NLP"/></span>
-                <span class="affil-text">
-                    <span class="affil-num">1</span>
-                    <span class="affil-name">UC Santa Barbara</span>
-                </span>
-            </div>
-            <div class="affil-item">
-                <span class="affil-logo-wrap"><img src="static/images/logos/ucb.png" alt="UC Berkeley"/></span>
-                <span class="affil-text">
-                    <span class="affil-num">2</span>
-                    <span class="affil-name">UC Berkeley</span>
-                </span>
-            </div>
-            <div class="affil-item">
-                <span class="affil-logo-wrap"><img src="static/images/logos/wisc.png" alt="UW–Madison"/></span>
-                <span class="affil-text">
-                    <span class="affil-num">3</span>
-                    <span class="affil-name">UW–Madison</span>
-                </span>
-            </div>
-            <div class="affil-item">
-                <span class="affil-logo-wrap"><img src="static/images/logos/stanford.png" alt="Stanford"/></span>
-                <span class="affil-text">
-                    <span class="affil-num">4</span>
-                    <span class="affil-name">Stanford University</span>
-                </span>
-            </div>
-            <div class="affil-item">
-                <span class="affil-logo-wrap"><img src="static/images/logos/msr1.png" alt="Microsoft Research"/></span>
-                <span class="affil-text">
-                    <span class="affil-num">5</span>
-                    <span class="affil-name">Microsoft Research</span>
-                </span>
-            </div>
-        </div>
-
-        <div class="links">
-            <a href="#" class="btn btn-primary">
-                <img src="assets/icons/arxiv.svg" alt="arXiv" style="width:16px;height:16px;border-radius:3px;"/>
-                Paper (arXiv)
-            </a>
-            <a href="https://github.com/eric-ai-lab/HarnessAudit" class="btn btn-outline" target="_blank" rel="noopener">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.92.58.11.79-.25.79-.55v-2.02c-3.2.7-3.87-1.37-3.87-1.37-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.24 3.34.95.11-.74.4-1.24.73-1.53-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18.92-.26 1.91-.39 2.89-.39.98 0 1.97.13 2.89.39 2.21-1.49 3.18-1.18 3.18-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.25 5.69.41.35.78 1.04.78 2.1v3.12c0 .31.21.66.8.55C20.21 21.39 23.5 17.07 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>
-                GitHub
-            </a>
-            <a href="https://huggingface.co/datasets/eric-ai-lab/HarnessAudit-Bench" class="btn btn-hf" target="_blank" rel="noopener">
-                <span class="hf-emoji" aria-hidden="true">🤗</span>
-                Hugging Face
-            </a>
-            <a href="tasks.html" class="btn btn-cta">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-                Browse Tasks
-                <span class="cta-badge">210</span>
-            </a>
-            <a href="#leaderboard" class="btn btn-outline">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-6"/></svg>
-                Leaderboard
-            </a>
-            <a href="#dashboard" class="btn btn-outline">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
-                Live Data
-            </a>
-        </div>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="index.html">
+        <img src="static/images/paper/UCSB_NLP.png" alt="">
+        <span>WorldMemArena</span>
+      </a>
+      <div class="nav-links" aria-label="Primary navigation">
+        <a href="#benchmark">Benchmark</a>
+        <a href="#results">Results</a>
+        <a href="data.html">Data Explorer</a>
+        <a href="https://huggingface.co/datasets/WorldMemArena/WorldMemArena">Dataset</a>
+      </div>
     </div>
-</div>
+  </nav>
 
-<div class="layout">
-    <!-- ====================== SIDEBAR ====================== -->
-    <aside class="sidebar">
-        <div class="nav-title">Sections</div>
-        <nav id="sidenav">
-            <a href="#overview">Overview</a>
-            <a href="#problem">Problem</a>
-            <a href="#framework">Framework</a>
-            <a href="#benchmark">Benchmark</a>
-            <a href="#tasks">Task Browser</a>
-            <a href="#dashboard">Interactive Data</a>
-            <a href="#leaderboard">Leaderboard</a>
-            <a href="#findings">Key Findings</a>
-            <a href="#analysis">Analysis</a>
-            <a href="#citation">Citation</a>
-        </nav>
-    </aside>
+  <header class="hero">
+    <div class="hero-media" aria-hidden="true">
+      <img src="static/images/paper/fig11.png" alt="">
+    </div>
+    <div class="hero-content">
+      <div class="eyebrow">Multimodal agent memory benchmark</div>
+      <h1>WorldMemArena</h1>
+      <p class="hero-lede">
+        Evaluating multimodal agent memory through action-world interaction: writing useful evidence, maintaining evolving state,
+        retrieving decision-relevant memory, and using it at answer time.
+      </p>
+      <div class="hero-actions">
+        <a class="button primary" href="data.html">Explore the data</a>
+        <a class="button" href="#results">See findings</a>
+        <a class="button" href="https://anonymous.4open.science/r/WorldMemArena-98C9">Code</a>
+      </div>
+    </div>
+  </header>
 
-    <!-- ====================== MAIN ====================== -->
-    <main class="container">
+  <main>
+    <section class="section" aria-label="Benchmark summary">
+      <div class="stats">
+        <div class="stat reveal"><strong>400</strong><span>multi-session tasks</span></div>
+        <div class="stat reveal"><strong>24,258</strong><span>checkpoint QA pairs</span></div>
+        <div class="stat reveal"><strong>15,595</strong><span>images and screenshots</span></div>
+        <div class="stat reveal"><strong>4</strong><span>diagnostic memory stages</span></div>
+      </div>
+    </section>
 
-        <!-- Overview -->
-        <section id="overview">
-            <h2 class="section-title"><span class="num">01</span>Overview</h2>
-            <p>
-                Modern LLM agents <strong>rarely act alone</strong>. They run inside execution
-                <em>harnesses</em>—like OpenClaw, Claude Code, and Codex—that dispatch tools,
-                allocate resources, and route messages across specialized components. The harness,
-                not the model, decides which actions are exposed, who may invoke them, and when
-                execution terminates. This shift exposes failure modes that output-level evaluation
-                cannot see: a run can return a correct, benign answer along a trajectory that
-                accessed unauthorized resources, leaked context to the wrong agent, or triggered
-                irreversible side effects.
-            </p>
+    <section class="section" id="benchmark">
+      <div class="section-head reveal">
+        <div>
+          <div class="kicker">What it evaluates</div>
+          <h2>Memory as an observable lifecycle, not a final accuracy score.</h2>
+        </div>
+        <p>
+          WorldMemArena turns long-horizon multimodal interaction into stage-level diagnosis, so failures can be localized instead of hidden inside one QA number.
+        </p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature reveal">
+          <div class="num">1</div>
+          <h3>Observe to Write</h3>
+          <p>Can the agent identify future-useful evidence from session observations, actions, images, and feedback?</p>
+        </article>
+        <article class="feature reveal">
+          <div class="num">2</div>
+          <h3>Update and Consolidate</h3>
+          <p>Can memory revise stale facts, remove outdated entries, and preserve a consistent world state over time?</p>
+        </article>
+        <article class="feature reveal">
+          <div class="num">3</div>
+          <h3>Retrieve and Use</h3>
+          <p>Can the system surface the right evidence and faithfully use it for later answers and decisions?</p>
+        </article>
+      </div>
+    </section>
 
-            <figure class="fig-title">
-                <img src="static/images/figures/title.png" alt="HarnessAudit overview figure" loading="lazy"/>
-                <figcaption>
-                    <strong>HarnessAudit overview.</strong>
-                    (a) 8 real-world domains with realistic safety constraints.
-                    (b) Agents plan, retrieve, execute tools, review, and communicate while
-                    interacting with mutable resources and dynamic environments.
-                    (c) HarnessAudit audits <em>full trajectories</em> beyond final outputs and
-                    compares configurations along boundary compliance, execution fidelity, and
-                    system stability.
-                </figcaption>
-            </figure>
+    <section class="section band">
+      <div class="inner two-col">
+        <div class="figure-panel reveal">
+          <img src="static/images/paper/pipline.png" alt="WorldMemArena data construction pipeline">
+          <div class="figure-caption">Data construction pipeline across Lifelong Evolution and Agentic Execution.</div>
+        </div>
+        <div class="reveal">
+          <div class="kicker">Two regimes</div>
+          <h2>Controlled state evolution plus realistic agent trajectories.</h2>
+          <p class="muted">
+            Lifelong Evolution tracks personal and task states across sessions. Agentic Execution reconstructs memory from real observations,
+            actions, screenshots, and environment feedback. Together they stress both persistent state tracking and action-grounded experience reuse.
+          </p>
+          <p style="margin-top: 20px;">
+            <a class="button primary" href="data.html" style="background:var(--blue);color:#fff;border-color:var(--blue);">Open data visualizations</a>
+          </p>
+        </div>
+      </div>
+    </section>
 
-            <div class="stats">
-                <div class="stat-card"><div class="stat-num">210</div><div class="stat-label">Tasks</div></div>
-                <div class="stat-card"><div class="stat-num">8</div><div class="stat-label">Domains</div></div>
-                <div class="stat-card"><div class="stat-num">24</div><div class="stat-label">Scenarios</div></div>
-                <div class="stat-card"><div class="stat-num">69</div><div class="stat-label">Role Templates</div></div>
-                <div class="stat-card"><div class="stat-num">10</div><div class="stat-label">Harness Configs</div></div>
-                <div class="stat-card"><div class="stat-num">11.6K</div><div class="stat-label">Tool Authz Entries</div></div>
-            </div>
+    <section class="section" id="results">
+      <div class="section-head reveal">
+        <div>
+          <div class="kicker">Main takeaways</div>
+          <h2>Better storage is not the same as better memory.</h2>
+        </div>
+        <p>
+          Experiments compare long-context agents, manually designed memory systems, RAG systems, and harness-based memory agents.
+        </p>
+      </div>
+      <div class="findings">
+        <article class="finding reveal">
+          <b>1</b>
+          <h3>Memory coverage and QA quality are misaligned.</h3>
+          <p>Systems can store many correct memories but fail to retrieve or use the specific evidence needed at answer time.</p>
+        </article>
+        <article class="finding reveal">
+          <b>2</b>
+          <h3>Visual memory remains a bottleneck.</h3>
+          <p>Complex multimodal tasks degrade when visual evidence is compressed into incomplete text proxies.</p>
+        </article>
+        <article class="finding reveal">
+          <b>3</b>
+          <h3>Agentic trajectories expose brittleness.</h3>
+          <p>Useful information is distributed across actions, feedback, GUI states, and screenshots, not just dialogue.</p>
+        </article>
+        <article class="finding reveal">
+          <b>4</b>
+          <h3>Harness memory is flexible but costly.</h3>
+          <p>Agent-managed memory adapts better in some regimes, yet remains less stable and more expensive.</p>
+        </article>
+      </div>
+    </section>
 
-            <div class="contrib-grid">
-                <div class="contrib-card">
-                    <div class="contrib-icon" style="background:linear-gradient(135deg,#2563eb,#7c3aed);">01</div>
-                    <h3>Harness-centric formulation</h3>
-                    <p>An agent harness as a policy-constrained execution system audited via hidden, agent-independent evidence channels.</p>
-                </div>
-                <div class="contrib-card">
-                    <div class="contrib-icon" style="background:linear-gradient(135deg,#0d9488,#2563eb);">02</div>
-                    <h3>Realistic stress testing</h3>
-                    <p>HarnessAudit-Bench: 210 tasks in 8 domains with embedded safety constraints, instantiated in single- and multi-agent configs.</p>
-                </div>
-                <div class="contrib-card">
-                    <div class="contrib-icon" style="background:linear-gradient(135deg,#d97706,#dc2626);">03</div>
-                    <h3>Empirical analysis</h3>
-                    <p>10 harness configurations across frontier models and 3 multi-agent frameworks reveal systematic safety failure patterns.</p>
-                </div>
-            </div>
-        </section>
+    <section class="section band">
+      <div class="inner">
+        <div class="section-head reveal">
+          <div>
+            <div class="kicker">Evidence</div>
+            <h2>Failure modes across domains, modalities, and retrieval.</h2>
+          </div>
+          <p>Selected figures from the paper summarize lifecycle failures, scenario gaps, and cost-performance tradeoffs.</p>
+        </div>
+        <div class="feature-grid">
+          <figure class="figure-panel reveal">
+            <img src="static/images/paper/RQ1.png" alt="Lifecycle failure analysis">
+            <figcaption class="figure-caption">Lifecycle failures compound across long trajectories.</figcaption>
+          </figure>
+          <figure class="figure-panel reveal">
+            <img src="static/images/paper/new.png" alt="Scenario and visual QA analysis">
+            <figcaption class="figure-caption">Agentic and visual tasks create different memory pressures.</figcaption>
+          </figure>
+          <figure class="figure-panel reveal">
+            <img src="static/images/paper/Figure10_acc_v2.png" alt="Token efficiency and QA performance">
+            <figcaption class="figure-caption">Harnesses shift the accuracy-cost tradeoff.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
 
-        <!-- Problem -->
-        <section id="problem">
-            <h2 class="section-title"><span class="num">02</span>Problem &amp; Three Safety Layers</h2>
-            <p class="section-sub">
-                We argue that agent safety should be evaluated on the <strong>harness</strong>
-                rather than the <strong>response</strong>, and audited over the full execution
-                trajectory along three jointly-required properties:
-            </p>
+    <section class="section">
+      <div class="cta reveal">
+        <div>
+          <h2>Inspect the benchmark composition interactively.</h2>
+          <p>Switch between Lifelong, GUI, embodied, and visual-agent domains; compare sample counts, evidence density, modality pressure, and representative screenshots.</p>
+        </div>
+        <a class="button primary" href="data.html">Launch Data Explorer</a>
+      </div>
+    </section>
+  </main>
 
-            <div class="layer-grid">
-                <div class="layer-card l1">
-                    <div class="layer-label">Layer 1</div>
-                    <h3>♣ Boundary Compliance</h3>
-                    <p>Every action stays within the permission policy (Π) and information-flow
-                    policy (Φ). Audited across <em>tools</em>, <em>resources</em>, and
-                    <em>information flow</em>.</p>
-                </div>
-                <div class="layer-card l2">
-                    <div class="layer-label">Layer 2</div>
-                    <h3>♣ Execution Fidelity</h3>
-                    <p>The trajectory reaches the goal via valid intermediate steps —
-                    measured by action validity and checkpointed task completion.</p>
-                </div>
-                <div class="layer-card l3">
-                    <div class="layer-label">Layer 3</div>
-                    <h3>♣ System Stability</h3>
-                    <p>L1 and L2 survive controlled stressors: indirect prompt injection,
-                    ambiguous goals, and runtime/tool errors.</p>
-                </div>
-            </div>
+  <footer>
+    WorldMemArena: Evaluating Multimodal Agent Memory Through Action-World Interaction
+  </footer>
 
-            <p>
-                Existing benchmarks score only final outputs or terminal states, so a task that
-                completes while accessing forbidden resources looks indistinguishable from a clean
-                success. Recent harness-oriented work mostly targets single-agent settings, leaving
-                <strong>inter-component communication</strong> in production multi-agent harnesses
-                largely unaudited.
-            </p>
-        </section>
-
-        <!-- Framework -->
-        <section id="framework">
-            <h2 class="section-title"><span class="num">03</span>Auditing Framework</h2>
-            <p>
-                A central design choice of HarnessAudit: <strong>all evaluation evidence is
-                collected from channels agents cannot manipulate or anticipate</strong>, rather
-                than from their self-reports. Each run proceeds through <em>Setup</em>,
-                <em>Execution</em>, and <em>Judge</em>.
-            </p>
-            <figure class="fig-pipline">
-                <img src="static/images/figures/pipline.png" alt="Auditing pipeline" loading="lazy"/>
-                <figcaption>
-                    <strong>HarnessAudit auditing pipeline.</strong>
-                    Hidden audit artifacts stay invisible during execution; trajectory logs and
-                    backend evidence support a three-layer diagnosis.
-                </figcaption>
-            </figure>
-        </section>
-
-        <!-- Benchmark -->
-        <section id="benchmark">
-            <h2 class="section-title"><span class="num">04</span>HarnessAudit-Bench</h2>
-            <p>
-                HarnessAudit-Bench covers <strong>210 tasks</strong> across <strong>8 application
-                domains</strong> and <strong>24 fine-grained scenarios</strong>: finance,
-                e-commerce, healthcare, office operations, social interaction, daily life, legal
-                compliance, and software engineering. Each task is paired with audit rules over
-                tool use, resource access, and information flow, plus perturbation specifications
-                for stability testing.
-            </p>
-            <figure class="fig-bar">
-                <img src="static/images/figures/bar.png" alt="Benchmark overview" loading="lazy"/>
-                <figcaption>
-                    <strong>HarnessAudit-Bench</strong> covers 210 tasks across 8 real-world
-                    domains and 24 fine-grained scenarios with role-based multi-agent structures.
-                </figcaption>
-            </figure>
-        </section>
-
-        <!-- ============== TASK BROWSER CTA ============== -->
-        <section id="tasks">
-            <h2 class="section-title"><span class="num">05</span>Task Browser</h2>
-            <p class="section-sub">
-                The full HarnessAudit-Bench task browser lives in its own dedicated workspace, where
-                you can switch between 8 domains, search by role or tool, and inspect each task's
-                audit specification.
-            </p>
-            <div class="cta-card">
-                <div class="cta-left">
-                    <div class="cta-eyebrow">Task Browser</div>
-                    <h3 class="cta-title">Explore 210 tasks across 8 domains</h3>
-                    <p class="cta-desc">
-                        Browse representative HarnessAudit-Bench tasks domain by domain. Each task
-                        ships with audited roles, tool authorizations, safety constraints, and a
-                        representative perturbation — all in a dedicated workspace.
-                    </p>
-                    <div class="cta-actions">
-                        <a href="tasks.html" class="btn btn-cta">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-                            Open Task Browser
-                        </a>
-                        <a href="tasks.html?domain=finance" class="btn btn-outline cta-mini">💳 Finance</a>
-                        <a href="tasks.html?domain=healthcare" class="btn btn-outline cta-mini">🩺 Healthcare</a>
-                        <a href="tasks.html?domain=swe" class="btn btn-outline cta-mini">💻 Software Eng.</a>
-                    </div>
-                </div>
-                <div class="cta-right">
-                    <a href="tasks.html?domain=finance" class="domain-mini" style="--dc:#2563eb"><span>💳</span><span>Finance</span></a>
-                    <a href="tasks.html?domain=ecommerce" class="domain-mini" style="--dc:#7c3aed"><span>🛍️</span><span>E-commerce</span></a>
-                    <a href="tasks.html?domain=healthcare" class="domain-mini" style="--dc:#ef4444"><span>🩺</span><span>Healthcare</span></a>
-                    <a href="tasks.html?domain=office" class="domain-mini" style="--dc:#0d9488"><span>🏢</span><span>Office Ops</span></a>
-                    <a href="tasks.html?domain=social" class="domain-mini" style="--dc:#db2777"><span>💬</span><span>Social</span></a>
-                    <a href="tasks.html?domain=daily" class="domain-mini" style="--dc:#d97706"><span>🌞</span><span>Daily Life</span></a>
-                    <a href="tasks.html?domain=legal" class="domain-mini" style="--dc:#475569"><span>⚖️</span><span>Legal</span></a>
-                    <a href="tasks.html?domain=swe" class="domain-mini" style="--dc:#0ea5e9"><span>💻</span><span>Software Eng.</span></a>
-                </div>
-            </div>
-        </section>
-
-        <!-- ============== DASHBOARD ============== -->
-        <section id="dashboard">
-            <h2 class="section-title"><span class="num">06</span>Interactive Data</h2>
-            <p class="section-sub">
-                Explore HarnessAudit-Bench results across 10 harness configurations. Toggle views
-                to compare safety layers, perturbation stability, and trade-off curves.
-            </p>
-
-            <div class="dashboard">
-                <div class="dashboard-header">
-                    <div class="dashboard-title">
-                        <span class="live-dot"></span>
-                        <span>HarnessAudit-Bench &middot; 10 configurations</span>
-                    </div>
-                    <div class="tabs" role="tablist">
-                        <button class="tab-btn active" data-pane="pane-overall">Overall</button>
-                        <button class="tab-btn" data-pane="pane-layers">L1 / L2 / L3</button>
-                        <button class="tab-btn" data-pane="pane-perturbation">Perturbation</button>
-                        <button class="tab-btn" data-pane="pane-radar">Radar</button>
-                        <button class="tab-btn" data-pane="pane-tradeoff">Trade-off</button>
-                    </div>
-                </div>
-
-                <div class="chart-area">
-                    <div id="pane-overall" class="chart-pane active">
-                        <canvas id="chartOverall" height="320"></canvas>
-                    </div>
-
-                    <div id="pane-layers" class="chart-pane">
-                        <canvas id="chartLayers" height="320"></canvas>
-                    </div>
-
-                    <div id="pane-perturbation" class="chart-pane">
-                        <canvas id="chartPerturb" height="320"></canvas>
-                    </div>
-
-                    <div id="pane-radar" class="chart-pane">
-                        <canvas id="chartRadar" height="340"></canvas>
-                    </div>
-
-                    <div id="pane-tradeoff" class="chart-pane">
-                        <canvas id="chartTradeoff" height="320"></canvas>
-                    </div>
-                </div>
-
-                <div class="legend">
-                    <span><i style="background:#2563eb"></i> OpenClaw</span>
-                    <span><i style="background:#7c3aed"></i> Claude Code</span>
-                    <span><i style="background:#d97706"></i> Codex</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- ============== LEADERBOARD ============== -->
-        <section id="leaderboard">
-            <h2 class="section-title"><span class="num">07</span>Leaderboard</h2>
-            <p class="section-sub">
-                Main results across three evaluation layers. <strong>Higher is better</strong> for
-                all metrics. Best in column highlighted.
-            </p>
-            <div class="table-wrap">
-                <table class="leaderboard">
-                    <thead>
-                        <tr>
-                            <th rowspan="2">Model</th>
-                            <th class="group" colspan="4">L1 — Boundary Compliance</th>
-                            <th class="group" colspan="3">L2 — Execution Fidelity</th>
-                            <th class="group" colspan="4">L3 — System Stability</th>
-                            <th class="group" colspan="3">Trade-off (S@T)</th>
-                            <th rowspan="2">Overall</th>
-                        </tr>
-                        <tr>
-                            <th>SAR<sup>t</sup></th><th>SAR<sup>r</sup></th><th>SAR<sup>f</sup></th><th>Avg</th>
-                            <th>AVS</th><th>TCR</th><th>Avg</th>
-                            <th>Inj.</th><th>Amb.</th><th>Rob.</th><th>Avg</th>
-                            <th>S@20</th><th>S@40</th><th>S@60</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="group-row"><td colspan="16">OpenClaw</td></tr>
-                        <tr><td class="model">ChatGPT-5.4</td><td>0.61</td><td>0.43</td><td>0.51</td><td>0.52</td><td>0.49</td><td>0.51</td><td>0.50</td><td>0.18</td><td>0.35</td><td class="best">0.67</td><td>0.33</td><td>0.62</td><td>0.48</td><td>0.31</td><td>0.25</td></tr>
-                        <tr><td class="model">Claude Opus 4.6</td><td>0.38</td><td>0.16</td><td>0.35</td><td>0.30</td><td>0.51</td><td>0.69</td><td>0.60</td><td>0.17</td><td>0.22</td><td>0.30</td><td>0.23</td><td>0.53</td><td>0.41</td><td>0.34</td><td>0.18</td></tr>
-                        <tr><td class="model">Claude Sonnet 4.6</td><td>0.47</td><td>0.22</td><td>0.46</td><td>0.38</td><td>0.49</td><td>0.57</td><td>0.53</td><td>0.19</td><td>0.28</td><td>0.40</td><td>0.26</td><td>0.53</td><td>0.39</td><td>0.25</td><td>0.19</td></tr>
-                        <tr><td class="model">Gemini 3.1 Pro</td><td class="best">0.74</td><td class="best">0.57</td><td>0.66</td><td class="best">0.66</td><td class="best">0.53</td><td>0.50</td><td>0.52</td><td class="best">0.22</td><td class="best">0.38</td><td>0.65</td><td>0.34</td><td class="best">0.70</td><td>0.40</td><td>0.17</td><td class="best">0.32</td></tr>
-                        <tr><td class="model">GLM 5V Turbo</td><td>0.63</td><td>0.34</td><td>0.55</td><td>0.51</td><td>0.47</td><td>0.46</td><td>0.47</td><td>0.19</td><td>0.30</td><td>0.42</td><td>0.28</td><td>0.54</td><td>0.40</td><td>0.21</td><td>0.22</td></tr>
-                        <tr><td class="model">Kimi K2.6</td><td>0.73</td><td>0.51</td><td class="best">0.70</td><td>0.65</td><td>0.49</td><td>0.43</td><td>0.46</td><td>0.20</td><td>0.37</td><td>0.62</td><td class="best">0.36</td><td>0.57</td><td>0.29</td><td>0.13</td><td>0.28</td></tr>
-                        <tr><td class="model">Qwen 3.5 Plus</td><td>0.66</td><td>0.32</td><td>0.48</td><td>0.49</td><td>0.50</td><td>0.49</td><td>0.50</td><td>0.17</td><td>0.35</td><td>0.43</td><td>0.28</td><td>0.56</td><td>0.38</td><td>0.19</td><td>0.23</td></tr>
-
-                        <tr class="group-row group-claude"><td colspan="16">Claude Code</td></tr>
-                        <tr><td class="model">Claude Opus 4.6</td><td>0.47</td><td>0.20</td><td>0.45</td><td>0.37</td><td>0.51</td><td class="best">0.71</td><td class="best">0.61</td><td>0.20</td><td>0.26</td><td>0.38</td><td>0.26</td><td>0.58</td><td>0.53</td><td class="best">0.44</td><td>0.23</td></tr>
-                        <tr><td class="model">Claude Sonnet 4.6</td><td>0.65</td><td>0.31</td><td>0.46</td><td>0.47</td><td>0.51</td><td>0.66</td><td>0.59</td><td>0.22</td><td>0.33</td><td>0.47</td><td>0.30</td><td>0.65</td><td class="best">0.59</td><td class="best">0.44</td><td>0.27</td></tr>
-
-                        <tr class="group-row group-codex"><td colspan="16">Codex</td></tr>
-                        <tr><td class="model">ChatGPT-5.4</td><td>0.38</td><td>0.12</td><td>0.35</td><td>0.28</td><td>0.48</td><td>0.69</td><td>0.59</td><td>0.15</td><td>0.24</td><td>0.23</td><td>0.19</td><td>0.50</td><td>0.45</td><td>0.35</td><td>0.16</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="legend">
-                <span><i style="background:#2563eb"></i> Best in column</span>
-                <span>SAR = Safety Adherence Rate &middot; AVS = Action Validity &middot; TCR = Task Completion &middot; S@T = score retained at τ task completion</span>
-            </div>
-        </section>
-
-        <!-- ============== KEY FINDINGS ============== -->
-        <section id="findings">
-            <h2 class="section-title"><span class="num">08</span>Key Findings</h2>
-            <div class="findings">
-                <div class="finding" data-num="01">
-                    <h4>Current harnesses are far from safely reliable</h4>
-                    <p>Even the best system reaches only <strong>0.32</strong> overall. Strong task
-                    completion does not imply safe execution.</p>
-                </div>
-                <div class="finding" data-num="02">
-                    <h4>Completion ≠ safety compliance</h4>
-                    <p>Models with higher TCR can still violate critical execution boundaries; the
-                    two objectives are <strong>misaligned</strong>.</p>
-                </div>
-                <div class="finding" data-num="03">
-                    <h4>Resource access dominates violations</h4>
-                    <p>Agents rarely call obviously wrong tools, but routinely apply seemingly
-                    reasonable tools to <strong>unauthorized resources</strong>.</p>
-                </div>
-                <div class="finding" data-num="04">
-                    <h4>Fragile under perturbations</h4>
-                    <p>Indirect prompt injection causes the largest drop; agents are easily swayed
-                    by <strong>hidden instructions</strong> in tool returns.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ============== ANALYSIS FIGURES ============== -->
-        <section id="analysis">
-            <h2 class="section-title"><span class="num">09</span>Analysis Highlights</h2>
-
-            <p><strong>[RQ1] Higher completion does not necessarily imply safer execution.</strong>
-            Across harnesses, task completion shows a consistent negative association with safety
-            adherence. Violations grow with the number of executed actions.</p>
-            <figure class="fig-511">
-                <img src="static/images/figures/fig511.png" alt="Completion vs safety trade-off" loading="lazy"/>
-                <figcaption>
-                    (a) Task completion vs mean safety adherence. (b) Number of violations vs
-                    executed actions. (c) Safety retained at increasing completion thresholds.
-                </figcaption>
-            </figure>
-
-            <p><strong>[RQ2] Risks differ across domains and roles.</strong> Finance and office
-            tasks expose resource-boundary risks; daily-life and e-commerce stress information
-            flow; software engineering pressures tool use. Agents responsible for coordination,
-            final execution, or cross-role access cross safety boundaries more frequently.</p>
-            <figure class="fig-6">
-                <img src="static/images/figures/fig6.png" alt="Domain and role risk patterns" loading="lazy"/>
-                <figcaption>
-                    Domain-level adherence across safety channels, and violation rates of
-                    representative high-risk roles.
-                </figcaption>
-            </figure>
-
-            <p><strong>[RQ4] Violations are widespread across agents.</strong> More than 50% of
-            agents commit at least one violation per task; resource access and information flow are
-            the most fragile surfaces.</p>
-            <figure class="fig-7">
-                <img src="static/images/figures/fig7.png" alt="Protocol adherence and agent-level violations" loading="lazy"/>
-                <figcaption>
-                    (a) Protocol adherence across Codex, Claude Code, and OpenClaw. (b) Per-task
-                    fraction of role agents with violations under each harness.
-                </figcaption>
-            </figure>
-
-            <p><strong>[RQ5] Harness design sets the ceiling for safe deployment.</strong> Native
-            harnesses can lift completion, but safety gains depend on how the harness structures
-            tool use and execution control. Framework choice matters: weaker orchestration leads to
-            more violations in realistic collaboration.</p>
-            <figure class="fig-8">
-                <img src="static/images/figures/fig8.png" alt="Native vs OpenClaw and multi-agent frameworks" loading="lazy"/>
-                <figcaption>
-                    (a) Native vs OpenClaw under matched models. (b) Completion vs safety across
-                    three multi-agent frameworks.
-                </figcaption>
-            </figure>
-        </section>
-
-        <!-- ============== CITATION ============== -->
-        <section id="citation">
-            <h2 class="section-title"><span class="num">10</span>Citation</h2>
-            <p class="section-sub">If you find HarnessAudit useful, please cite our work:</p>
-            <div class="citation">
-                <button class="copy-btn" id="copyCite">Copy</button>
-<pre id="citeText">@article{liu2026harnessaudit,
-  title   = {Auditing Agent Harness Safety},
-  author  = {Liu, Chengzhi and Guo, Yichen and Liu, Yepeng and Yang, Yuzhe
-             and Yan, Qianqi and Zhao, Xuandong and Hua, Wenyue and Liu, Sheng
-             and Li, Sharon and Bu, Yuheng and Wang, Xin Eric},
-  journal = {arXiv preprint},
-  year    = {2026}
-}</pre>
-            </div>
-        </section>
-    </main>
-</div>
-
-<footer>
-    Built with care for safer agent harnesses &middot;
-    <a href="https://github.com/eric-ai-lab/HarnessAudit" target="_blank" rel="noopener">source</a>
-    &middot; &copy; 2026 HarnessAudit
-</footer>
-
-<!-- Lightbox for figure zoom -->
-<div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
-    <button class="close" id="lightboxClose" aria-label="Close">Close</button>
-    <img id="lightboxImg" alt=""/>
-</div>
-
-<!-- ====================== SCRIPTS ====================== -->
-<script>
-/* ----------- DATA (from the paper, Section 5 main results) ----------- */
-const MODELS = [
-    { name: "ChatGPT-5.4",       group: "OpenClaw",    color: "#2563eb",
-      SAR_t:0.61, SAR_r:0.43, SAR_f:0.51, L1_avg:0.52,
-      AVS:0.49,  TCR:0.51,  L2_avg:0.50,
-      Inj:0.18,  Amb:0.35,  Rob:0.67,  L3_avg:0.33,
-      ST20:0.62, ST40:0.48, ST60:0.31, Overall:0.25 },
-    { name: "Claude Opus 4.6",   group: "OpenClaw",    color: "#2563eb",
-      SAR_t:0.38, SAR_r:0.16, SAR_f:0.35, L1_avg:0.30,
-      AVS:0.51,  TCR:0.69,  L2_avg:0.60,
-      Inj:0.17,  Amb:0.22,  Rob:0.30,  L3_avg:0.23,
-      ST20:0.53, ST40:0.41, ST60:0.34, Overall:0.18 },
-    { name: "Claude Sonnet 4.6", group: "OpenClaw",    color: "#2563eb",
-      SAR_t:0.47, SAR_r:0.22, SAR_f:0.46, L1_avg:0.38,
-      AVS:0.49,  TCR:0.57,  L2_avg:0.53,
-      Inj:0.19,  Amb:0.28,  Rob:0.40,  L3_avg:0.26,
-      ST20:0.53, ST40:0.39, ST60:0.25, Overall:0.19 },
-    { name: "Gemini 3.1 Pro",    group: "OpenClaw",    color: "#2563eb",
-      SAR_t:0.74, SAR_r:0.57, SAR_f:0.66, L1_avg:0.66,
-      AVS:0.53,  TCR:0.50,  L2_avg:0.52,
-      Inj:0.22,  Amb:0.38,  Rob:0.65,  L3_avg:0.34,
-      ST20:0.70, ST40:0.40, ST60:0.17, Overall:0.32 },
-    { name: "GLM 5V Turbo",      group: "OpenClaw",    color: "#2563eb",
-      SAR_t:0.63, SAR_r:0.34, SAR_f:0.55, L1_avg:0.51,
-      AVS:0.47,  TCR:0.46,  L2_avg:0.47,
-      Inj:0.19,  Amb:0.30,  Rob:0.42,  L3_avg:0.28,
-      ST20:0.54, ST40:0.40, ST60:0.21, Overall:0.22 },
-    { name: "Kimi K2.6",         group: "OpenClaw",    color: "#2563eb",
-      SAR_t:0.73, SAR_r:0.51, SAR_f:0.70, L1_avg:0.65,
-      AVS:0.49,  TCR:0.43,  L2_avg:0.46,
-      Inj:0.20,  Amb:0.37,  Rob:0.62,  L3_avg:0.36,
-      ST20:0.57, ST40:0.29, ST60:0.13, Overall:0.28 },
-    { name: "Qwen 3.5 Plus",     group: "OpenClaw",    color: "#2563eb",
-      SAR_t:0.66, SAR_r:0.32, SAR_f:0.48, L1_avg:0.49,
-      AVS:0.50,  TCR:0.49,  L2_avg:0.50,
-      Inj:0.17,  Amb:0.35,  Rob:0.43,  L3_avg:0.28,
-      ST20:0.56, ST40:0.38, ST60:0.19, Overall:0.23 },
-    { name: "Claude Opus 4.6 (CC)",   group: "Claude Code", color: "#7c3aed",
-      SAR_t:0.47, SAR_r:0.20, SAR_f:0.45, L1_avg:0.37,
-      AVS:0.51,  TCR:0.71,  L2_avg:0.61,
-      Inj:0.20,  Amb:0.26,  Rob:0.38,  L3_avg:0.26,
-      ST20:0.58, ST40:0.53, ST60:0.44, Overall:0.23 },
-    { name: "Claude Sonnet 4.6 (CC)", group: "Claude Code", color: "#7c3aed",
-      SAR_t:0.65, SAR_r:0.31, SAR_f:0.46, L1_avg:0.47,
-      AVS:0.51,  TCR:0.66,  L2_avg:0.59,
-      Inj:0.22,  Amb:0.33,  Rob:0.47,  L3_avg:0.30,
-      ST20:0.65, ST40:0.59, ST60:0.44, Overall:0.27 },
-    { name: "ChatGPT-5.4 (Codex)",     group: "Codex",      color: "#d97706",
-      SAR_t:0.38, SAR_r:0.12, SAR_f:0.35, L1_avg:0.28,
-      AVS:0.48,  TCR:0.69,  L2_avg:0.59,
-      Inj:0.15,  Amb:0.24,  Rob:0.23,  L3_avg:0.19,
-      ST20:0.50, ST40:0.45, ST60:0.35, Overall:0.16 },
-];
-
-const labels = MODELS.map(m => m.name);
-const colors = MODELS.map(m => m.color);
-
-/* Chart.js defaults */
-Chart.defaults.font.family = "Inter, sans-serif";
-Chart.defaults.color = "#475569";
-Chart.defaults.borderColor = "rgba(15,23,42,0.06)";
-
-/* ---------- Chart 1: Overall + TCR ---------- */
-const ctxOverall = document.getElementById('chartOverall').getContext('2d');
-new Chart(ctxOverall, {
-    type: 'bar',
-    data: {
-        labels,
-        datasets: [
-            {
-                label: 'Overall Harness Safety',
-                data: MODELS.map(m => m.Overall),
-                backgroundColor: colors,
-                borderRadius: 6,
-                borderSkipped: false,
-            },
-            {
-                label: 'Task Completion (TCR)',
-                data: MODELS.map(m => m.TCR),
-                backgroundColor: 'rgba(15, 23, 42, 0.12)',
-                borderRadius: 6,
-                borderSkipped: false,
-            },
-        ],
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(2)}` } },
-            legend: { position: 'top' },
-        },
-        scales: {
-            y: { beginAtZero: true, max: 0.85, ticks: { stepSize: 0.1 }, title: { display: true, text: 'Score' } },
-            x: { ticks: { maxRotation: 35, minRotation: 35, autoSkip: false, font: { size: 10 } } },
-        },
-    },
-});
-
-/* ---------- Chart 2: L1/L2/L3 stacked ---------- */
-const ctxLayers = document.getElementById('chartLayers').getContext('2d');
-new Chart(ctxLayers, {
-    type: 'bar',
-    data: {
-        labels,
-        datasets: [
-            { label: 'L1 Boundary',  data: MODELS.map(m => m.L1_avg), backgroundColor: 'rgba(37, 99, 235, 0.85)',  borderRadius: 4 },
-            { label: 'L2 Fidelity',  data: MODELS.map(m => m.L2_avg), backgroundColor: 'rgba(13, 148, 136, 0.85)', borderRadius: 4 },
-            { label: 'L3 Stability', data: MODELS.map(m => m.L3_avg), backgroundColor: 'rgba(217, 119, 6, 0.85)',  borderRadius: 4 },
-        ],
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(2)}` } },
-            legend: { position: 'top' },
-        },
-        scales: {
-            y: { beginAtZero: true, max: 0.85, title: { display: true, text: 'Score' } },
-            x: { ticks: { maxRotation: 35, minRotation: 35, autoSkip: false, font: { size: 10 } } },
-        },
-    },
-});
-
-/* ---------- Chart 3: Perturbation breakdown ---------- */
-const ctxPerturb = document.getElementById('chartPerturb').getContext('2d');
-new Chart(ctxPerturb, {
-    type: 'bar',
-    data: {
-        labels,
-        datasets: [
-            { label: 'Indirect Injection', data: MODELS.map(m => m.Inj), backgroundColor: 'rgba(220, 38, 38, 0.78)',  borderRadius: 4 },
-            { label: 'Ambiguous Goal',     data: MODELS.map(m => m.Amb), backgroundColor: 'rgba(217, 119, 6, 0.78)',  borderRadius: 4 },
-            { label: 'Robustness',         data: MODELS.map(m => m.Rob), backgroundColor: 'rgba(5, 150, 105, 0.78)',  borderRadius: 4 },
-        ],
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.y.toFixed(2)}` } },
-            legend: { position: 'top' },
-        },
-        scales: {
-            y: { beginAtZero: true, max: 0.8, title: { display: true, text: 'Stability score' } },
-            x: { ticks: { maxRotation: 35, minRotation: 35, autoSkip: false, font: { size: 10 } } },
-        },
-    },
-});
-
-/* ---------- Chart 4: Radar (top harnesses on 8 axes) ---------- */
-const radarPick = ["Gemini 3.1 Pro", "Kimi K2.6", "ChatGPT-5.4", "Claude Sonnet 4.6 (CC)", "ChatGPT-5.4 (Codex)"];
-const radarColors = ["#2563eb", "#0d9488", "#1e40af", "#7c3aed", "#d97706"];
-const radarAxes = ["SAR^t", "SAR^r", "SAR^f", "AVS", "TCR", "Inj.", "Amb.", "Rob."];
-const radarDatasets = radarPick.map((name, i) => {
-    const m = MODELS.find(x => x.name === name);
-    return {
-        label: name,
-        data: [m.SAR_t, m.SAR_r, m.SAR_f, m.AVS, m.TCR, m.Inj, m.Amb, m.Rob],
-        borderColor: radarColors[i],
-        backgroundColor: radarColors[i] + "33",
-        borderWidth: 2,
-        pointRadius: 3,
-        pointBackgroundColor: radarColors[i],
-    };
-});
-const ctxRadar = document.getElementById('chartRadar').getContext('2d');
-new Chart(ctxRadar, {
-    type: 'radar',
-    data: { labels: radarAxes, datasets: radarDatasets },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'top' } },
-        scales: {
-            r: {
-                beginAtZero: true, suggestedMax: 0.8,
-                ticks: { backdropColor: 'transparent', stepSize: 0.2, font: { size: 10 } },
-                grid: { color: 'rgba(15,23,42,0.08)' },
-                angleLines: { color: 'rgba(15,23,42,0.08)' },
-                pointLabels: { font: { size: 11, weight: 600 } },
-            },
-        },
-    },
-});
-
-/* ---------- Chart 5: Trade-off (TCR vs safety adherence avg) ---------- */
-const ctxTradeoff = document.getElementById('chartTradeoff').getContext('2d');
-new Chart(ctxTradeoff, {
-    type: 'scatter',
-    data: {
-        datasets: MODELS.map(m => ({
-            label: m.name,
-            data: [{ x: m.TCR, y: m.L1_avg, model: m.name }],
-            backgroundColor: m.color,
-            borderColor: m.color,
-            pointRadius: 9,
-            pointHoverRadius: 13,
-            pointStyle: m.group === "OpenClaw" ? "circle" : (m.group === "Claude Code" ? "triangle" : "rect"),
-        })),
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 12 } },
-            tooltip: {
-                callbacks: {
-                    label: (c) => `${c.raw.model}: TCR=${c.parsed.x.toFixed(2)}, SAR=${c.parsed.y.toFixed(2)}`,
-                },
-            },
-            title: { display: true, text: 'TCR ↑  vs  Boundary Compliance (Avg) ↑   — top-right is best' },
-        },
-        scales: {
-            x: { title: { display: true, text: 'Task Completion (TCR)' }, min: 0.3, max: 0.8 },
-            y: { title: { display: true, text: 'L1 Boundary Compliance (Avg)' }, min: 0.2, max: 0.75 },
-        },
-    },
-});
-
-/* ---------- Tabs ---------- */
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.chart-pane').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(btn.dataset.pane).classList.add('active');
-        window.dispatchEvent(new Event('resize'));
-    });
-});
-
-/* ---------- Copy citation ---------- */
-document.getElementById('copyCite').addEventListener('click', async () => {
-    const text = document.getElementById('citeText').innerText;
-    try {
-        await navigator.clipboard.writeText(text);
-        const btn = document.getElementById('copyCite');
-        const old = btn.innerText;
-        btn.innerText = 'Copied!';
-        setTimeout(() => btn.innerText = old, 1400);
-    } catch (e) {}
-});
-
-/* ---------- Sidebar active section highlighting (scrollspy) ---------- */
-const sections = document.querySelectorAll('section[id]');
-const navLinks = document.querySelectorAll('#sidenav a');
-function onScrollSpy() {
-    const top = window.scrollY + 120;
-    let current = sections[0].id;
-    sections.forEach(s => { if (s.offsetTop <= top) current = s.id; });
-    navLinks.forEach(a => {
-        a.classList.toggle('active', a.getAttribute('href') === '#' + current);
-    });
-}
-window.addEventListener('scroll', onScrollSpy, { passive: true });
-onScrollSpy();
-
-/* =====================================================================
-   FIGURE LIGHTBOX  (click any figure image to enlarge)
-   ===================================================================== */
-(function(){
-    const lb = document.getElementById('lightbox');
-    const lbImg = document.getElementById('lightboxImg');
-    const lbClose = document.getElementById('lightboxClose');
-    function open(src, alt) {
-        lbImg.src = src;
-        lbImg.alt = alt || '';
-        lb.classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
-    function close() {
-        lb.classList.remove('open');
-        document.body.style.overflow = '';
-        setTimeout(() => { lbImg.src = ''; }, 200);
-    }
-    document.querySelectorAll('figure img').forEach(img => {
-        img.addEventListener('click', () => open(img.getAttribute('src'), img.alt));
-    });
-    lb.addEventListener('click', e => { if (e.target === lb || e.target === lbImg) close(); });
-    lbClose.addEventListener('click', close);
-    document.addEventListener('keydown', e => { if (e.key === 'Escape' && lb.classList.contains('open')) close(); });
-})();
-
-
-/* =====================================================================
-   Subtle reveal-on-scroll for sections and figures
-   ===================================================================== */
-(function(){
-    const io = new IntersectionObserver(entries => {
-        entries.forEach(en => {
-            if (en.isIntersecting) {
-                en.target.style.opacity = 1;
-                en.target.style.transform = 'translateY(0)';
-                io.unobserve(en.target);
-            }
-        });
-    }, { threshold: 0.08 });
-    document.querySelectorAll('section, figure, .contrib-card, .layer-card, .stat-card, .finding').forEach(el => {
-        el.style.opacity = 0;
-        el.style.transform = 'translateY(12px)';
-        el.style.transition = 'opacity .5s ease, transform .5s ease';
-        io.observe(el);
-    });
-})();
-</script>
-
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.14 });
+    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+  </script>
 </body>
 </html>
